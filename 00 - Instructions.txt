@@ -1,0 +1,140 @@
+INSTRUCTIONS for Choko Hack v11.0.1
+      ___           ___           ___           ___           ___     
+     /\__\         /\  \         /\  \         /|  |         /\  \    
+    /:/  /         \:\  \       /::\  \       |:|  |        /::\  \   
+   /:/  /           \:\  \     /:/\:\  \      |:|  |       /:/\:\  \  
+  /:/  /  ___   ___ /::\  \   /:/  \:\  \   __|:|  |      /:/  \:\  \
+ /:/__/  /\__\ /\  /:/\:\__\ /:/__/ \:\__\ /\ |:|__|____ /:/__/ \:\__\
+ \:\  \ /:/  / \:\/:/  \/__/ \:\  \ /:/  / \:\/:::::/__/ \:\  \ /:/  /
+  \:\  /:/  /   \::/__/       \:\  /:/  /   \::/~~/       \:\  /:/  /
+   \:\/:/  /     \:\  \        \:\/:/  /     \:\~~\        \:\/:/  /  
+    \::/  /       \:\__\        \::/  /       \:\__\        \::/  /   
+     \/__/         \/__/         \/__/         \/__/         \/__/    
+
+    ----===== Por que semos los mas mejores der mundo... =====----    
+
+            Y al que no le guste, [CENSORED BY THE AUDITOR]           
+
+
+------------------------------------------------------------
+REQUIREMENTS:
+------------------------------------------------------------
+
+1. CHA (not mandatory but v1.6 firmware is recommended)
+2. USB drive formatted to FAT32/EXT2/EXT3/EXT4
+3. Male - Male USB Type A cable.
+4. Latest Zadig Universal Drivers. (Download here:  https://zadig.akeo.ie )
+5. CHOKO HACK PACKAGE SOFTWARE.
+
+
+------------------------------------------------------------
+DISCLAIMER NOTE:
+------------------------------------------------------------
+
+This process is really safe if it is done following carefully the instructions, however we are not responsible for any damage you may cause to  your Capcom Home Arcade (CHA) because of your actions. Use the software at your own risk and under your responsibility.
+
+The Choko Team Does not support any kind of piracy. This is a Proof of Concept.  Use the software just with the game roms you legally own.
+
+
+------------------------------------------------------------
+FIRST STEPS:  PREVIOUS SOFTWARE INSTALL AND USB PREPARATION
+------------------------------------------------------------
+
+1. If you are using Windows, download and install latest Zadig Universal Drivers.
+
+Note: If you previously have modded a NES Mini / SNES Mini / MD Mini... you may already have installed Zadig drivers pack. Then, skip this part of the process.
+
+2. Download the latest CHOKO HACK SOFTWARE PACK and decompress the ZIP file to any folder in your PC hard drive.
+ 
+
+------------------------------------------------------------
+OPENING THE CHA DEVICE: PUTTING CHA INTO FEL MODE
+------------------------------------------------------------
+
+Note: This method requires that you open the device just once.
+
+3. Place CHA upside down on a smooth surface not to scratch the CHA Plate and remove the 10 screws (4 + 6 under the rubber pads; if you don't have replacement rubber pads, remove them careful to glue them back again).
+
+4. Now, it's time to put your CHA in FEL mode. Use a USB Type A male - male A cable and connect it to the PC (not to the CHA yet).
+
+5. Remove the rubber cover of the CHA USB EXT port BUT DON'T PLUG THE CABLE YET!
+
+6. Locate the FEL Button (it is placed in the upper part of the board below three copper contacts triangular formation you are facing, next to the screw on the upper right part when it's turned upside down. It is in the main Printed Circuit (Orange Pi) Board - the one with HDMI, USB and USB EXT input. Introduce your finger diagonally from the left and you'll touch a small button.
+
+See the image file FEL_mode.png to help you locate the button.
+
+7. WITH THE FEL BUTTON PRESSED, now insert the USB male into CHA USB EXT port. You will then hear Windows detect sound. Release the button. The same process goes for Linux. Don't use the Micro-USB cable to load as CHA will receive power from USB EXT too and therefore it is not necessary.
+
+8. Open the extracted CHA_FEL_MODE folder and run 'start.bat' (if you are using Windows) or start.sh (if you are using Linux). Press <Enter> when it asks for it.
+
+9. Once you've run that, TWO new drive UNITS will appear if you are using LINUX / ONE UNIT if you are using WINDOWS. These are part of the internal storage eMMC of the CHA. If it doesn't show up, go to Disk Manager and add a letter to the first partition of the CHA.
+
+10. Copy the three files from this new unit (boot.scr, sun8i-h3-orangepi-pc.dtb and zImage) to a backup folder in your PC Hard Drive. Keep them safe as they are the backup of your 10 MB FAT32 partition.
+
+##### NEW STEP REQUIRED FOR HACK v9.3 and later #####
+11. Rename the existing "boot.scr" to "original.boot.scr". NOTE THAT IT HAS TO BE EXACTLY "original.boot.scr". Be extra careful if Windows doesn't show all files extensions.
+
+Note: If there are any files with .old extension you can delete them. They are left after CHA 1.6 Update and the space will be needed.
+
+12. Copy the files in the 'FILES_TO_COPY_TO_CHA_DRIVE' folder (boot.scr, uIntitrd-CHA-MOD, hackinstall.sh and hackinstall.tar.gz) to the new unit, overwriting if necessary. If you have made a previous install, it is possible that an instance of uInitrd-CHA_MOD is already there and it may tell you that there is not enough free space to copy. In this case, remove the one already present and copy the new one.
+
+13. Eject / unmount the CHA drive safely.
+
+14. Power off the CHA and put the screws back in place.
+
+
+------------------------------------------------------------
+FIRST TIME BOOT:  INSTALLING SCRIPTS TO ENABLE USB UNIT.
+------------------------------------------------------------
+
+15. The next time you power on the CHA it will install the necessary files to use be able to load games from folders in USB pendisk. You should see some confirmation messages and it will automatically reboot.
+
+16. Now you'll see, at every boot, a purple message informing that you can safely power off the CHA at any time by pressing and holding [P1 I] + [P1 D] + [P2 I] + [P2 D] or reboot with [P1 S] + [P1 D] + [P2 S] + [P2 D], followed by a small countdown while searching for any USB pendrive.
+
+Note: If you start the CHA without the USB drive inserted, it will boot with the original firmware with the 16 official games.
+
+
+------------------------------------------------------------
+ADDING GAMES:
+------------------------------------------------------------
+
+Use the 'Automatic Lists' pack in https://github.com/ChokoGroup/Choko-Hack-Automatic-Lists
+
+ENJOY YOUR CAPCOM HOME ARCADE AS MUCH AS WE DO!!!
+
+------------------------------------------------------------
+MEMBERS  / CREDITS:
+------------------------------------------------------------
+
+CHOKO TEAM ARE (in alphabetical Order).
+
+- 12abril1981
+- Campirulo
+- CHA_Fan
+- jj0
+- Kei_Dash
+- Pararegistros
+- Woises Kikex-Box
+
+
+SUPPORTERS:
+
+- Fast-Lifeguard
+- Haurayu Mifune
+- Megafriki
+- Thematho
+- Vick21
+
+And many others of you at https://www.elotrolado.net  and  https://www.reddit.com/r/CapcomHomeArcade/
+
+We thank you all.
+
+------------------------------------------------------------
+THANKS:
+------------------------------------------------------------
+
+- Elotrolado.net community   (https://www.elotrolado.net)
+
+- Koch Media for making such a good piece of gaming top quality hardware. (http://capcomhomearcade.com/home)
+
+- Reddit CapcomHomeArcade forum (https://www.reddit.com/r/CapcomHomeArcade/)
