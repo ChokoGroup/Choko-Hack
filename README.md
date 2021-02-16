@@ -1,7 +1,7 @@
 # Choko-Hack v11.0.1
 ### Choko Hack for the Capcom Home Arcade
 
-The Choko Hack will allow you to add your roms to the CHA original system. You can preserve the original software without altering and use an USB disk to play your roms.
+The Choko Hack will allow you to play more roms with the CHA original system. You can preserve the original software, add games or use an USB disk to play your roms.
 
 Read the file '00 - Instructions.txt' to learn how to install.
 
