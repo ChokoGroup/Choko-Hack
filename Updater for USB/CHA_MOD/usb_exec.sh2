@@ -1,0 +1,455 @@
+#! /bin/sh
+# usb_exec.sh
+# For Choko Hack 11.0.0+
+
+# Simple string compare, since until 10.0.0 CHOKOVERSION wasn't set
+# Future versions need to keep this in mind
+if [ "$CHOKOVERSION" \< "11.0.0" ]
+then
+  echo -e "\nYou are running an outdated version of Choko Hack.\nYou need v11.0.0 or later.\n";
+  COUNTDOWN=5
+  while [ $COUNTDOWN -ge 0 ]
+  do
+    echo -ne "\rResuming in $COUNTDOWN seconds... "
+    COUNTDOWN=$((COUNTDOWN - 1))
+    sleep 1
+  done
+  exit 1
+fi
+RUNNINGFROM="$(dirname "$(readlink -f "$0")")"
+EXITREQUEST=0
+
+# Variables to store buttons pressed
+CHA1I="0"
+CHA1S="0"
+CHA2I="0"
+CHA2S="0"
+CHA1A="0"
+CHA1B="0"
+CHA1C="0"
+CHA1D="0"
+CHA1E="0"
+CHA1F="0"
+CHA2A="0"
+CHA2B="0"
+CHA2C="0"
+CHA2D="0"
+CHA2E="0"
+CHA2F="0"
+
+# Variables to store menu options
+GAMES1I="Capcom Games - Official List"
+# GAMES1S is reserved for Loading Choko Hack from USB or Install Games in CHA
+GAMES1S=""
+GAMES2I=""
+GAMES2S=""
+GAMES1A=""
+GAMES1B=""
+GAMES1C=""
+GAMES1D=""
+GAMES1E=""
+GAMES1F=""
+GAMES2A=""
+GAMES2B=""
+GAMES2C=""
+GAMES2D=""
+GAMES2E=""
+GAMES2F=""
+
+# if running from /.choko then check for USB
+# if running from USB then present Install option
+USBOPTION="N"
+DEFAULTOPTION=""
+
+if [ "$RUNNINGFROM" = "/.choko" ]
+then
+  # Check if USB:/*/usb_exec.sh is available
+  COUNTDOWN=5
+  while [ ! -b /dev/sda1 ] && [ $COUNTDOWN -gt 0 ]
+  do
+    echo -ne "\rWaiting $COUNTDOWN seconds for USB drive..."
+    COUNTDOWN=$(($COUNTDOWN - 1))
+    sleep 1
+  done
+  if [ -b /dev/sda1 ]
+  then
+    mount /dev/sda1 /mnt
+    if  [ $(find /mnt -mindepth 2 -maxdepth 2 -name usb_exec.sh -type f -print 2> /dev/null | wc -l) -gt 0 ]
+    then
+      GAMES1S="Run Choko Hack from USB"
+      USBOPTION="Y"
+    else
+      umount /mnt 2>/dev/null
+    fi
+  fi
+else
+  # We're running from USB
+
+  # Convert Windows EOL to Linux EOL
+  for f in "$RUNNINGFROM/games"??.*
+  do
+    sed -i 's/^M$//g' "$f"
+  done
+
+  if [ -f "$RUNNINGFROM/games1S.nfo" ]
+  then
+    GAMES1S="$(head -n 1 "$RUNNINGFROM/games1S.nfo")"
+  fi
+fi
+
+MORELISTS="N"
+# Read descriptions to display in menu
+for M in "1" "2"
+do
+  for N in "A" "B" "C" "D" "E" "F"
+  do
+    if [ -f "$RUNNINGFROM/games$M$N.nfo" ]
+    then
+      eval "GAMES$M$N=\$(head -n 1 \"$RUNNINGFROM/games$M$N.nfo\")"
+      MORELISTS="Y"
+      if [ "$RUNNINGFROM" != "/.choko" ]
+      then
+        [ -z "$DEFAULTOPTION" ] && DEFAULTOPTION="$M$N"
+      fi
+    fi
+  done
+done
+
+if [ "$USBOPTION" = "Y" ] || [ $(ls "$RUNNINGFROM/games"??.nfo 2> /dev/null | wc -l) -gt 0 ]
+then
+  # Default choice
+  if [ -z "$DEFAULTOPTION" ]
+  then
+    [ "$USBOPTION" = "Y" ] && DEFAULTOPTION="1S" || DEFAULTOPTION="1I"
+  fi
+
+  # Add 10 to string length for default choice indicator
+  eval "DESCLENGTH=\$((\${#GAMES$DEFAULTOPTION} + 10))"
+
+  # Read description for special lists P2-I P2-S
+  for N in "I" "S"
+  do
+    if [ -f "$RUNNINGFROM/games2$N.nfo" ]
+    then
+      eval "GAMES2$N=\$(head -n 1 \"$RUNNINGFROM/games2$N.nfo\")"
+    fi
+  done
+
+  # Check strings lenght
+  for M in "1" "2"
+  do
+    for N in "A" "B" "C" "D" "E" "F" "I" "S"
+    do
+      [ $(eval "echo \"\${#GAMES$M$N} -gt $DESCLENGTH\"") ] && eval "DESCLENGTH=\${#GAMES$M$N}"
+    done
+  done
+
+  # Check screen size and display menu background
+  SCREENSIZE=$(fbset | sed '2q;d'); SCREENSIZE=${SCREENSIZE#*'"'}; SCREENSIZE=${SCREENSIZE%'-'*}
+  cat "$RUNNINGFROM/menu-$SCREENSIZE.rgba" > /dev/fb0
+
+  COLUMNS=`stty -F /dev/tty0 size | cut '-d ' -f2`
+  ROWS=`stty -F /dev/tty0 size | cut '-d ' -f1`
+
+  # Add space for buttons labels in menu list + border space
+  MENUFIX=14
+
+  # Position of top left corner of menu
+  MENUTOPROW=$(($ROWS / 2 + 1))
+  MENULEFTCOLUMN=$(( ($COLUMNS - $MENUFIX - $DESCLENGTH ) / 2 ))
+
+  # Start drawing the menu
+  TopLeftCorner='\e[12mI'
+  TopRightCorner=';\e[10m'
+  HorizontalBar='M'
+  VerticalBar='\e[12m:\e[10m'
+  BottomLeftCorner='\e[12mH'
+  BottomRighCorner='<\e[10m'
+
+  BorderColor='\e[1;94m'
+  ButtonColor='\e[1;37m'
+  OptionColor='\e[1;93m'
+  CountdownColor='\e[1;95m'
+
+  # Top line + border space
+  echo -ne "\e[${MENUTOPROW};${MENULEFTCOLUMN}H$BorderColor$TopLeftCorner"
+  i=$(($DESCLENGTH + $MENUFIX))
+  while [ $i -gt 0 ]
+  do
+    echo -ne "$HorizontalBar"
+    i=$(($i - 1))
+  done
+  echo -ne "$TopRightCorner\n\e[${MENULEFTCOLUMN}G$VerticalBar$(printf "%-$(($DESCLENGTH + $MENUFIX))s" " ")$VerticalBar\n"
+
+  # Games lists
+  for M in "1" "2"
+  do
+    for N in "A" "B" "C" "D" "E" "F"
+    do
+      if [ -n "$(eval "echo \"\$GAMES$M$N\"")" ]
+      then
+        if [ "$M$N" = "$DEFAULTOPTION" ]
+        then
+          eval "DESCDEFAULT=\$(printf \"%-${DESCLENGTH}s\" \"\$GAMES$M$N\")"
+          DESCDEFAULT="${DESCDEFAULT/          / \\e[1;95m(default)}"
+          echo -ne "\e[${MENULEFTCOLUMN}G$VerticalBar  $ButtonColor[ P$M $N ]$OptionColor  $DESCDEFAULT  $BorderColor$VerticalBar\n"
+        else
+          eval "echo -ne \"\e[${MENULEFTCOLUMN}G$VerticalBar  $ButtonColor[ P$M $N ]$OptionColor  \$(printf \"%-${DESCLENGTH}s\" \"\$GAMES$M$N\")  $BorderColor$VerticalBar\n\""
+        fi
+      fi
+    done
+  done
+  [ "$MORELISTS" = "Y" ] && echo -ne "\e[${MENULEFTCOLUMN}G$VerticalBar$(printf "%-$(($DESCLENGTH + $MENUFIX))s" " ")$VerticalBar\n"
+
+  # Special menu options
+  for M in "1" "2"
+  do
+    for N in "I" "S"
+    do
+      if [ -n "$(eval "echo \"\$GAMES$M$N\"")" ]
+      then
+        if [ "$M$N" = "$DEFAULTOPTION" ]
+        then
+          eval "DESCDEFAULT=\$(printf \"%-${DESCLENGTH}s\" \"\$GAMES$M$N\")"
+          DESCDEFAULT="${DESCDEFAULT/          / \\e[1;95m(default)}"
+          echo -ne "\e[${MENULEFTCOLUMN}G$VerticalBar  $ButtonColor[ P$M $N ]$OptionColor  $DESCDEFAULT  $BorderColor$VerticalBar\n"
+        else
+          eval "echo -ne \"\e[${MENULEFTCOLUMN}G$VerticalBar  $ButtonColor[ P$M $N ]$OptionColor  \$(printf \"%-${DESCLENGTH}s\" \"\$GAMES$M$N\")  $BorderColor$VerticalBar\n\""
+        fi
+      fi
+    done
+  done
+
+  # Border space + bottom line
+  echo -ne "\e[${MENULEFTCOLUMN}G$VerticalBar$(printf "%-$(($DESCLENGTH + $MENUFIX))s" " ")$VerticalBar\n\e[${MENULEFTCOLUMN}G$BottomLeftCorner"
+  i=$(($DESCLENGTH + $MENUFIX - 8))
+  while [ $i -gt 0 ]
+  do
+    echo -ne "$HorizontalBar"
+    i=$(($i - 1))
+  done
+  echo -ne "\e[10mv$CHOKOVERSION\e[12m$HorizontalBar$BottomRighCorner"
+
+  # Wait for selection and read buttons
+  COUNTDOWN=20
+  COUNTDOWNX=$(($COLUMNS / 2))
+  while [ "$CHA1I$CHA1S$CHA2I$CHA2S$CHA1A$CHA1B$CHA1C$CHA1D$CHA1E$CHA1F$CHA2A$CHA2B$CHA2C$CHA2D$CHA2E$CHA2F" = "0000000000000000" ] && [ $COUNTDOWN -ge 0 ]
+  do
+    # Always show 2 digits in COUNTDOWN
+    [ ${#COUNTDOWN} -gt 1 ] && echo -ne "\e[${COUNTDOWNX}G$CountdownColor${COUNTDOWN}" || echo -ne "\e[${COUNTDOWNX}G${CountdownColor}0${COUNTDOWN}"
+    COUNTDOWN=$(($COUNTDOWN - 1))
+    sleep 1
+    if [ -n "$GAMES1I" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event2 EV_KEY BTN_BASE2
+      CHA1I=$?
+    fi
+    if [ -n "$GAMES1S" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event2 EV_KEY BTN_BASE
+      CHA1S=$?
+    fi
+    if [ -n "$GAMES2I" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event3 EV_KEY BTN_BASE2
+      CHA2I=$?
+    fi
+    if [ -n "$GAMES2S" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event3 EV_KEY BTN_BASE
+      CHA2S=$?
+    fi
+    if [ -n "$GAMES1A" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event2 EV_KEY BTN_TOP
+      CHA1A=$?
+    fi
+    if [ -n "$GAMES1B" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event2 EV_KEY BTN_TOP2
+      CHA1B=$?
+    fi
+    if [ -n "$GAMES1C" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event2 EV_KEY BTN_PINKIE
+      CHA1C=$?
+    fi
+    if [ -n "$GAMES1D" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event2 EV_KEY BTN_TRIGGER
+      CHA1D=$?
+    fi
+    if [ -n "$GAMES1E" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event2 EV_KEY BTN_THUMB
+      CHA1E=$?
+    fi
+    if [ -n "$GAMES1F" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event2 EV_KEY BTN_THUMB2
+      CHA1F=$?
+    fi
+    if [ -n "$GAMES2A" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event3 EV_KEY BTN_TOP
+      CHA2A=$?
+    fi
+    if [ -n "$GAMES2B" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event3 EV_KEY BTN_TOP2
+      CHA2B=$?
+    fi
+    if [ -n "$GAMES2C" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event3 EV_KEY BTN_PINKIE
+      CHA2C=$?
+    fi
+    if [ -n "$GAMES2D" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event3 EV_KEY BTN_TRIGGER
+      CHA2D=$?
+    fi
+    if [ -n "$GAMES2E" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event3 EV_KEY BTN_THUMB
+      CHA2E=$?
+    fi
+    if [ -n "$GAMES2F" ]
+    then
+      /usr/sbin/evtest --query /dev/input/event3 EV_KEY BTN_THUMB2
+      CHA2F=$?
+    fi
+  done
+
+  # Put text cursor in top left corner of screen and clear the screen leaving Choko
+  echo -ne "\e[1;1H\e[0m"
+  clear
+  cat "$RUNNINGFROM/choko-$SCREENSIZE.rgba" > /dev/fb0
+
+  # Load selected option
+  case "$CHA1I$CHA1S$CHA2I$CHA2S$CHA1A$CHA1B$CHA1C$CHA1D$CHA1E$CHA1F$CHA2A$CHA2B$CHA2C$CHA2D$CHA2E$CHA2F" in
+    10000000000000000)
+      echo "Selected: $GAMES1I"
+    ;;
+    01000000000000000)
+      echo "Selected: $GAMES1S"
+      "$RUNNINGFROM/games1S.sh"
+      EXITREQUEST=$?
+    ;;
+    00100000000000000)
+      echo "Selected: $GAMES2I"
+      "$RUNNINGFROM/games2I.sh"
+      EXITREQUEST=$?
+    ;;
+    00010000000000000)
+      echo "Selected: $GAMES2S"
+      "$RUNNINGFROM/games2S.sh"
+      EXITREQUEST=$?
+    ;;
+    00001000000000000)
+      echo "Selected: $GAMES1A"
+      "$RUNNINGFROM/games1A.sh"
+      EXITREQUEST=$?
+    ;;
+    00000100000000000)
+      echo "Selected: $GAMES1B"
+      "$RUNNINGFROM/games1B.sh"
+      EXITREQUEST=$?
+    ;;
+    00000010000000000)
+      echo "Selected: $GAMES1C"
+      "$RUNNINGFROM/games1C.sh"
+      EXITREQUEST=$?
+    ;;
+    00000001000000000)
+      echo "Selected: $GAMES1D"
+      "$RUNNINGFROM/games1D.sh"
+      EXITREQUEST=$?
+    ;;
+    00000000100000000)
+      echo "Selected: $GAMES1E"
+      "$RUNNINGFROM/games1E.sh"
+      EXITREQUEST=$?
+    ;;
+    00000000010000000)
+      echo "Selected: $GAMES1F"
+      "$RUNNINGFROM/games1F.sh"
+      EXITREQUEST=$?
+    ;;
+    00000000001000000)
+      echo "Selected: $GAMES2A"
+      "$RUNNINGFROM/games2A.sh"
+      EXITREQUEST=$?
+    ;;
+    00000000000100000)
+      echo "Selected: $GAMES2B"
+      "$RUNNINGFROM/games2B.sh"
+      EXITREQUEST=$?
+    ;;
+    00000000000010000)
+      echo "Selected: $GAMES2C"
+      "$RUNNINGFROM/games2C.sh"
+      EXITREQUEST=$?
+    ;;
+    00000000000001000)
+      echo "Selected: $GAMES2D"
+      "$RUNNINGFROM/games2D.sh"
+      EXITREQUEST=$?
+    ;;
+    00000000000000100)
+      echo "Selected: $GAMES2E"
+      "$RUNNINGFROM/games2E.sh"
+      EXITREQUEST=$?
+    ;;
+    00000000000000010)
+      echo "Selected: $GAMES2F"
+      "$RUNNINGFROM/games2F.sh"
+      EXITREQUEST=$?
+    ;;
+    *)
+      # If running from eMMC or SD card...
+      if [ "$RUNNINGFROM" = "/.choko" ]
+      then
+        if [ "$USBOPTION" = "N" ]
+        then
+          # ... without USB default action is official 16 games
+          echo "Selected: $GAMES1I"
+        else
+          # ... with USB default is load from USB
+          echo "Selected: $GAMES1S"
+          "$RUNNINGFROM/games1S.sh"
+          EXITREQUEST=$?
+        fi
+      else
+        # If running from USB...
+        if [ "$DEFAULTOPTION" = "1I" ]
+        then
+          # if there are no lists, run official 16 games
+          echo "Selected: $GAMES1I"
+        else
+          # and if there is a list, run it;
+          eval "echo \"Selected: \$GAMES$DEFAULTOPTION\""
+          eval "\"$RUNNINGFROM/games$DEFAULTOPTION.sh\""
+          EXITREQUEST=$?
+        fi
+      fi
+    ;;
+  esac
+fi
+
+# Start FTP server if it exists
+if [ -x "$RUNNINGFROM/.FTP/uFTP" ]
+then
+  cd "$RUNNINGFROM/.FTP"
+  ./uFTP &>/dev/null
+  cd ..
+fi
+
+# Start dropbear SSH server if it exists
+if [ -x "$RUNNINGFROM/.SSH/dropbear" ]
+then
+  cd "$RUNNINGFROM/.SSH"
+  ./dropbear -r ./dropbear_ecdsa_host_key -r ./id_rsa -R -E -B &>/dev/null
+  cd ..
+fi
+exit $EXITREQUEST

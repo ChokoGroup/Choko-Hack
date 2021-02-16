@@ -1,0 +1,7 @@
+- Vertical games are sideways, they won't rotate.
+
+- In "Dungeons & Dragons: Shadow Over Mystarasecon", player 2 can't select and use weapons/magic.
+
+- If the list has too many games, bezels or buttons options may not load, and games crash frequently.
+
+- Sometimes the "Insert coin" won't work (usually after playing several different games), but rebooting the CHA will fix.

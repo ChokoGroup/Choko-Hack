@@ -1,0 +1,70 @@
+v11.0.1
+- Force a write cache flush before reboot/shutdown, trying to avoid SD cards not updating.
+
+v11.0.0
+- New safe reboot feature (press P1-S + P1-D + P2-S + P2-D and hold).
+- Support to Load multiple Hacks from USB in multiple folders with any name.
+- Changed menu colors to improve readability.
+- Fixed the command that could flood boot screen with error messages.
+- Choko Hack version is displayed with menu.
+- Although older packs may still work, they probably need to keep folder name as CHA_MOD).
+
+v10.0.0
+- New menu layout with Choko image.
+- Support for multiple lists (one to each button).
+- Menu option to copy games lists to internal memory of CHA (or delete them).
+- New safe poweroff feature (press P1-I + P1-D + P2-I + P2-D and hold).
+- No more dependency of 'dialog' external app.
+
+Notes and technical remarks:
+- 'S20usbcheck' script is now minimal: looks for 'usb_exec.sh' in '/.choko' and load; if not look in 'USB:/CHA_MOD' and load; if not, give up.
+- v10 will load "old" USB:/CHA_MOD/usb_exec.sh but the new version of usb_exec.sh will refuse to run in older versions of Choko Hack.
+- The same 'usb_exec.sh' can be run either from USB or internal memory.
+- The Choko graphic in menu supports 720p and 1080p. Other resolutions will disrupt the image but text menu/options should still be OK and usable.
+- A new script 'S11chokopoweroff' runs in background to safely unmount USB and power off (or reboot) the CHA.
+  > 'usb_exec.sh' can use exit code 200 to request for safe reboot or exit code 201 to request for safe power off.
+
+- Games lists assigned to a button have the following structure:
+  > Files and folders must be named 'games1A' (for Player 1 button A), ..., 'games2F' (for Player 2 button F) and placed inside CHA_MOD (that is in the root of pendrive).
+    * 'games??.nfo' have the one line title for the list (to show in menu).
+    * 'games??.txt' are the list of games to replace original 'games.txt' (they must follow the structure of original file).
+    * 'games??.sh' are the scripts that will effectively mount the required files in substitution of the originals.
+    * 'games??' folders have the assets for the games (images, music, buttons layout, etc).
+    * the ROMs must go under a folder in 'usr/share/roms/games??'
+  > Each list of games can load a different core, placed in usr/lib/libretro and mounted by the 'games??.sh' script. If not using the default fbneo_libretro.so, edit the script accordingly.
+
+- Since each list has an executable 'games??.sh' script, with little modifications it can be used to load a sub menu.
+
+- P1 Insert: Reserved to "Capcom Official List"
+- P1 Start:  Reserved to "Load from USB" or "Install Games in CHA"
+- P2 Insert or P2 Start: used by Lakka installer
+> If you have Lakka installed when updating Choko Hack, you'll need to run "Lakka installer and updater v4.0" after the update of the hack.
+
+
+v9.3 Choko Hack
+- Fix for the menu being invisible after CHA 1.6 Update. Read the NEW STEP NECESSARY in install instructions.
+- Minor fix in mounted paths for Capcom Extended List and SNK list when installed in eMMC or SD card.
+- Easter Egg changed: now is Golden UI Choko.
+- Random trigger the Easter Egg (1/50 chance).
+
+
+v9.2a Choko Hack
+- Hack optimizations to support both eMMC and micro SD card installations with one script.
+
+
+v9.2 Choko Hack
+- All-in-One Menu supporting USH hack, Lakka, and also extra Capcom / SNK lists if installed.
+- Fix Lakka being an option if using SD card when Lakka was installed in eMMC
+- Easter Egg added; can you find Ckoko? ;)
+
+
+v9.1 Choko Hack
+- Avoid false Lakka options in boot menu when in the middle of Lakka installation.
+
+
+v9.0 Choko Hack (Name Change)
+- Added a "smart" menu (and colors :) ) that adapts to existence or not of USB:/CHA_MOD or Lakka.
+- FTP and SSH are disabled by default.
+- Removed 60-second delay in starting SSHD (issues weren't related)
+- Changed the way hack is installed, not requiring a usb pendisk after reboot.
+- Logging disabled
