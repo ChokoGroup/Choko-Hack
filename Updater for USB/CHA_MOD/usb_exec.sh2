@@ -7,11 +7,11 @@
 if [ "$CHOKOVERSION" \< "11.0.0" ]
 then
   echo -e "\nYou are running an outdated version of Choko Hack.\nYou need v11.0.0 or later.\n";
-  COUNTDOWN=5
-  while [ $COUNTDOWN -ge 0 ]
+  COUNTDOWN=6
+  while [ $COUNTDOWN -gt 0 ]
   do
-    echo -ne "\rResuming in $COUNTDOWN seconds... "
     COUNTDOWN=$((COUNTDOWN - 1))
+    echo -ne "\rResuming in $COUNTDOWN seconds... "
     sleep 1
   done
   exit 1
@@ -64,11 +64,11 @@ DEFAULTOPTION=""
 if [ "$RUNNINGFROM" = "/.choko" ]
 then
   # Check if USB:/*/usb_exec.sh is available
-  COUNTDOWN=5
+  COUNTDOWN=6
   while [ ! -b /dev/sda1 ] && [ $COUNTDOWN -gt 0 ]
   do
-    echo -ne "\rWaiting $COUNTDOWN seconds for USB drive..."
     COUNTDOWN=$(($COUNTDOWN - 1))
+    echo -ne "\rWaiting $COUNTDOWN seconds for USB drive..."
     sleep 1
   done
   if [ -b /dev/sda1 ]
@@ -231,13 +231,13 @@ then
   echo -ne "\e[10mv$CHOKOVERSION\e[12m$HorizontalBar$BottomRighCorner"
 
   # Wait for selection and read buttons
-  COUNTDOWN=20
+  COUNTDOWN=11
   COUNTDOWNX=$(($COLUMNS / 2))
-  while [ "$CHA1I$CHA1S$CHA2I$CHA2S$CHA1A$CHA1B$CHA1C$CHA1D$CHA1E$CHA1F$CHA2A$CHA2B$CHA2C$CHA2D$CHA2E$CHA2F" = "0000000000000000" ] && [ $COUNTDOWN -ge 0 ]
+  while [ "$CHA1I$CHA1S$CHA2I$CHA2S$CHA1A$CHA1B$CHA1C$CHA1D$CHA1E$CHA1F$CHA2A$CHA2B$CHA2C$CHA2D$CHA2E$CHA2F" = "0000000000000000" ] && [ $COUNTDOWN -gt 0 ]
   do
+    COUNTDOWN=$(($COUNTDOWN - 1))
     # Always show 2 digits in COUNTDOWN
     [ ${#COUNTDOWN} -gt 1 ] && echo -ne "\e[${COUNTDOWNX}G$CountdownColor${COUNTDOWN}" || echo -ne "\e[${COUNTDOWNX}G${CountdownColor}0${COUNTDOWN}"
-    COUNTDOWN=$(($COUNTDOWN - 1))
     sleep 1
     if [ -n "$GAMES1I" ]
     then

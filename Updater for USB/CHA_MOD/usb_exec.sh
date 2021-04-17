@@ -20,11 +20,11 @@ fi
 
 if [ "$CHOKOVERSION" \< "10.0.0" ]
 then
-  COUNTDOWN=10
-  while [ $COUNTDOWN -ge 0 ]
+  COUNTDOWN=11
+  while [ $COUNTDOWN -gt 0 ]
   do
-    echo -ne "\rShutting down in $COUNTDOWN seconds... "
     COUNTDOWN=$(($COUNTDOWN - 1))
+    echo -ne "\rShutting down in $COUNTDOWN seconds... "
     sleep 1
   done
   clear
