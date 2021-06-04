@@ -1,38 +1,51 @@
 #!/bin/sh
+# Choko Hack updater
 
-RUNNINGFROM="$(dirname "$(readlink -f "$0")")"
-
-if [ -e "$RUNNINGFROM/hackinstall.tar.gz" ]
+if [ "$CHOKOVERSION" \> "12.0.0" ]
 then
-	cd /
-	gzip -dc < "$RUNNINGFROM/hackinstall.tar.gz" | tar xvf - 
-	RESULT=$?
-  if [ $RESULT -eq 0 ] && [ -x /.choko/usb_exec.sh ]
-  then
-     cp "$RUNNINGFROM/usb_exec.sh2" /.choko/usb_exec.sh
-     RESULT=$?
-     [ $RESULT -eq 0 ] && echo "/.choko/usb_exec.sh"
-  fi
-	[ $RESULT -eq 0 ] && echo -e "\nChoko Hack updated." || echo -e "\n\e[0;31mThere was some error!\e[0m"
+  echo "Your Choko Hack version is \"$CHOKOVERSION\" and shoud not be bigger than 12.0.0"
 else
-	echo -e "\e[0;31mFile hackinstall.tar.gz not found!\e[0m"
+  RUNNINGFROM="$(dirname "$(readlink -f "$0")")"
+
+  if [ -e "${RUNNINGFROM}/hackinstall.tar.gz" ]
+  then
+    cd /
+    gzip -dc < "${RUNNINGFROM}/hackinstall.tar.gz" | tar xvf - 
+    RESULT=$?
+    if [ $RESULT -eq 0 ]
+    then
+      [ -f "/.choko/menu-1280x720.rgba" ] && rm "/.choko/menu-1280x720.rgba"
+      [ -f "/.choko/menu-1920x1080.rgba" ] && rm "/.choko/menu-1920x1080.rgba"
+      [ -f "/.choko/games1S.sh" ] && rm "/.choko/games1S.sh"
+      chmod 644 /.choko/*.nfo
+      chmod 644 /.choko/*.rgba
+      chmod 644 /.choko/*.png
+      chmod 755 /etc/init.d/S11chokopoweroff
+      chmod 755 /etc/init.d/S20usbcheck
+      chmod 755 /etc/init.d/S21capcom
+      chmod 755 /usr/sbin/readjoysticks
+      echo -e "\nChoko Hack updated."
+    else
+      echo -e "\n\e[0;31mThere was some error!\e[0m"
+    fi
+  else
+    echo -e "\e[0;31mFile hackinstall.tar.gz not found!\e[0m"
+  fi
 fi
 
+COUNTDOWN=10
+while [ $COUNTDOWN -gt 0 ]
+do
+  echo -ne "\rRebooting in $COUNTDOWN seconds... "
+  COUNTDOWN=$((COUNTDOWN - 1))
+  sleep 1
+done
+echo -ne "\r\e[K"
+sync
 if [ "$CHOKOVERSION" \< "10.0.0" ]
 then
-  COUNTDOWN=11
-  while [ $COUNTDOWN -gt 0 ]
-  do
-    COUNTDOWN=$(($COUNTDOWN - 1))
-    echo -ne "\rShutting down in $COUNTDOWN seconds... "
-    sleep 1
-  done
-  clear
-  sync
-  echo "Power off now, then remove the pendrive and power on again."
-  poweroff -f
+  reboot -f
 else
-  # Call for safe unmount and poweroff
-  sync
-  exit 201
+  # Call for safe unmount and reboot
+  exit 200
 fi

@@ -1,4 +1,4 @@
-INSTRUCTIONS for Choko Hack v11.0.1
+INSTRUCTIONS for Choko Hack v12.0.0
       ___           ___           ___           ___           ___     
      /\__\         /\  \         /\  \         /|  |         /\  \    
     /:/  /         \:\  \       /::\  \       |:|  |        /::\  \   
@@ -69,29 +69,28 @@ See the image file FEL_mode.png to help you locate the button.
 
 9. Once you've run that, TWO new drive UNITS will appear if you are using LINUX / ONE UNIT if you are using WINDOWS. These are part of the internal storage eMMC of the CHA. If it doesn't show up, go to Disk Manager and add a letter to the first partition of the CHA.
 
-10. Copy the three files from this new unit (boot.scr, sun8i-h3-orangepi-pc.dtb and zImage) to a backup folder in your PC Hard Drive. Keep them safe as they are the backup of your 10 MB FAT32 partition.
-
-##### NEW STEP REQUIRED FOR HACK v9.3 and later #####
-11. Rename the existing "boot.scr" to "original.boot.scr". NOTE THAT IT HAS TO BE EXACTLY "original.boot.scr". Be extra careful if Windows doesn't show all files extensions.
+10. You can make a copy the three files from this new unit (boot.scr, sun8i-h3-orangepi-pc.dtb and zImage) to a backup folder in your PC Hard Drive, if for any reason you need to restore them.
 
 Note: If there are any files with .old extension you can delete them. They are left after CHA 1.6 Update and the space will be needed.
 
-12. Copy the files in the 'FILES_TO_COPY_TO_CHA_DRIVE' folder (boot.scr, uIntitrd-CHA-MOD, hackinstall.sh and hackinstall.tar.gz) to the new unit, overwriting if necessary. If you have made a previous install, it is possible that an instance of uInitrd-CHA_MOD is already there and it may tell you that there is not enough free space to copy. In this case, remove the one already present and copy the new one.
+11. Copy the files in the 'FILES_TO_COPY_TO_CHA_DRIVE' folder (boot.scr, hackinstall.sh, hackinstall.tar.gz, original.boot.scr and uIntitrd-CHA-MOD) to the new unit, overwriting if necessary.
 
-13. Eject / unmount the CHA drive safely.
+12. Eject / unmount the CHA drive safely.
 
-14. Power off the CHA and put the screws back in place.
+13. Power off the CHA and put the screws back in place.
 
 
 ------------------------------------------------------------
 FIRST TIME BOOT:  INSTALLING SCRIPTS TO ENABLE USB UNIT.
 ------------------------------------------------------------
 
-15. The next time you power on the CHA it will install the necessary files to use be able to load games from folders in USB pendisk. You should see some confirmation messages and it will automatically reboot.
+14. The next time you power on the CHA it will install the necessary files to use be able to load games from folders in USB pendisk. You should see some confirmation messages and it will automatically reboot.
 
-16. Now you'll see, at every boot, a purple message informing that you can safely power off the CHA at any time by pressing and holding [P1 I] + [P1 D] + [P2 I] + [P2 D] or reboot with [P1 S] + [P1 D] + [P2 S] + [P2 D], followed by a small countdown while searching for any USB pendrive.
+15. Now you'll see, at every boot, a purple message informing that you can safely power off the CHA at any time by pressing and holding [P1 I] + [P1 D] + [P2 I] + [P2 D] or reboot with [P1 S] + [P1 D] + [P2 S] + [P2 D].
 
-Note: If you start the CHA without the USB drive inserted, it will boot with the original firmware with the 16 official games.
+16. Another line informs that pressing [P1 Start] + [P2 Start] goes to settings (change the USB and the Menu timeout limits, also screen resolution), followed by a small countdown while searching for any USB pendrive.
+
+Note: If you start the CHA without any USB drive (or without folders containing 'usb_exec.sh' scripts) inserted, it will resume boot to the original firmware with the 16 official games.
 
 
 ------------------------------------------------------------

@@ -1,3 +1,12 @@
+v12.0.0
+- Menu can now be navigated with player 1 joystick (UP and DOWN move 1 line, LEFT and RIGHT move 5 lines).
+- Pressing both players Start button at startup will allow to change the timeout for USB and for menu default selection (zero disables automatic selection in menu) and optionally force screen resolution to 720p.
+- File structure from version 11 is still valid, but now ROMs folders can have any name (that name will be used for the menu list).
+- We are now not limited to one item per button but to screen number of rows; all available options are listed at once (USB and internal).
+- New exit code 202 to allow scripts returning to menu without rebooting the CHA.
+- Use 'readjoysticks' to read input, instead of relying in 'evtest' (lighter and faster; source code included).
+- Extras folder: 'SSH and FTP servers' (un)installer and also a 'Choko Hack Uninstaller' (why? I don't really know...)
+
 v11.0.1
 - Force a write cache flush before reboot/shutdown, trying to avoid SD cards not updating.
 
