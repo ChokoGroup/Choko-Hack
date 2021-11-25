@@ -34,6 +34,22 @@ gzip -dc < /mnt2/hackinstall.tar.gz | tar xvf -
 RESULT=$?
 if [ $RESULT -eq 0 ]
 then
+  chown root:root /mnt/.choko
+  chown root:root /mnt/.choko/*
+  chown root:root /mnt/etc
+  chown root:root /mnt/etc/*
+  chown root:root /mnt/etc/init.d/*
+  chown root:root /mnt/root
+  chown root:root /mnt/root/.profile
+  chown root:root /mnt/usr
+  chown root:root /mnt/usr/*
+  chown root:root /mnt/usr/sbin/readjoysticks
+  chmod 644 /mnt/.choko/*
+  chmod 755 /mnt/.choko/*.sh
+  chmod 755 /mnt/etc/init.d/S11chokopoweroff
+  chmod 755 /mnt/etc/init.d/S20usbcheck
+  chmod 755 /mnt/etc/init.d/S21capcom
+  chmod 755 /mnt/usr/sbin/readjoysticks
 	rm /mnt2/hackinstall.tar.gz
 	mv /mnt2/original.boot.scr /mnt2/boot.scr
 fi

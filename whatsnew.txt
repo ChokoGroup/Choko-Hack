@@ -1,3 +1,10 @@
+v12.2.0
+- Added an option to use "sun8i-h3-orangepi-pc.dtb" from 1.6 to allow Choko Hack to load items from USB and restore "sun8i-h3-orangepi-pc.dtb" from 1.7 to use the USB Joystick Mode.
+
+v12.1.0
+- User can set a menu default option by selecting and pressing [P1 START] and reset selection pressing [P1 Insert].
+- Selected option now has a different color from the other options.
+
 v12.0.0
 - Menu can now be navigated with player 1 joystick (UP and DOWN move 1 line, LEFT and RIGHT move 5 lines).
 - Pressing both players Start button at startup will allow to change the timeout for USB and for menu default selection (zero disables automatic selection in menu) and optionally force screen resolution to 720p.

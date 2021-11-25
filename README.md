@@ -1,4 +1,4 @@
-# Choko-Hack v12.0.0
+# Choko-Hack v12.2.0
 ### Choko Hack for the Capcom Home Arcade
 
 The Choko Hack will allow you to play more roms with the CHA original system. You can preserve the original software, add games or use an USB disk to play your roms.
@@ -8,13 +8,14 @@ Read the file '00 - Instructions.txt' to learn how to install.
 You can also look into the 'Video Guide.gif' - it's a little outdated but still gives a good idea of the process.
 
 
-### What's new in v12.0.0
-- Menu can now be navigated with player 1 joystick (UP and DOWN move 1 line, LEFT and RIGHT move 5 lines).
-- Pressing both players Start button at startup will allow to change the timeout for USB and for menu default selection (zero disables automatic selection in menu) and optionally force screen resolution to 720p.
-- File structure from version 11 is still valid, but now ROMs folders can have any name (that name will be used for the menu list).
-- We are now not limited to one item per button but to screen number of rows; all available options are listed at once (USB and internal).
-- New exit code 202 to allow scripts returning to menu without rebooting the CHA.
-- Use 'readjoysticks' to read input, instead of relying in 'evtest' (lighter and faster; source code included).
+### What's new in v12.2.0
+- Added an option to use "sun8i-h3-orangepi-pc.dtb" from 1.6 to allow Choko Hack to load items from USB and restore "sun8i-h3-orangepi-pc.dtb" from 1.7 to use the USB Joystick Mode.
+
+(new in v12.1.0)
+- User can set a menu default option by selecting and pressing \[P1 START\] and reset selection pressing \[P1 Insert\].
+- Selected option now has a different color from the other options.
+
+Read the file 'whatsnew.txt' to learn about what was new in past versions.
 
 
 ### Extras
