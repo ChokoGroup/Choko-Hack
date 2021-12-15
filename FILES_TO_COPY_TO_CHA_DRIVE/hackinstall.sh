@@ -34,22 +34,25 @@ gzip -dc < /mnt2/hackinstall.tar.gz | tar xvf -
 RESULT=$?
 if [ $RESULT -eq 0 ]
 then
-  chown root:root /mnt/.choko
-  chown root:root /mnt/.choko/*
-  chown root:root /mnt/etc
-  chown root:root /mnt/etc/*
-  chown root:root /mnt/etc/init.d/*
-  chown root:root /mnt/root
-  chown root:root /mnt/root/.profile
-  chown root:root /mnt/usr
-  chown root:root /mnt/usr/*
-  chown root:root /mnt/usr/sbin/readjoysticks
-  chmod 644 /mnt/.choko/*
-  chmod 755 /mnt/.choko/*.sh
-  chmod 755 /mnt/etc/init.d/S11chokopoweroff
-  chmod 755 /mnt/etc/init.d/S20usbcheck
-  chmod 755 /mnt/etc/init.d/S21capcom
-  chmod 755 /mnt/usr/sbin/readjoysticks
+  chown root:root /.choko
+  chown root:root /.choko/*
+  chown root:root /etc
+  chown root:root /etc/*
+  chown root:root /etc/init.d/*
+  chown root:root /root
+  chown root:root /root/.profile
+  chown root:root /usr
+  chown root:root /usr/*
+  chown root:root /usr/sbin/js2hid2
+  chown root:root /usr/sbin/readjoysticks
+  chmod 644 /.choko/*
+  chmod 755 /.choko/*.sh
+  chmod 755 /etc/init.d/S11chokopoweroff
+  chmod 755 /mnt/etc/init.d/S20joystick
+  chmod 755 /etc/init.d/S20usbcheck
+  chmod 755 /etc/init.d/S21capcom
+  chmod 755 /usr/sbin/js2hid2
+  chmod 755 /usr/sbin/readjoysticks
 	rm /mnt2/hackinstall.tar.gz
 	mv /mnt2/original.boot.scr /mnt2/boot.scr
 fi
