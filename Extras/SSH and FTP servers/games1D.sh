@@ -22,9 +22,9 @@ then
   fi
 fi
 
-if [ -d /.choko/.SSH ]
+if [ -d /.choko/.SSH ] || [ -f /.choko/S50sshd.original ]
 then
-  rm -rf /.choko/.SSH
+  [ -d /.choko/.SSH ] && rm -rf /.choko/.SSH
   rm "/.choko/Start SSH server."*
   echo "SSH server deleted."
 else

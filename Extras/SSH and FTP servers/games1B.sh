@@ -23,10 +23,16 @@ then
 fi
 
 RUNNINGFROM="$(dirname "$(realpath "$0")")"
-
-mkdir -p /.choko/.SSH
-cp "$RUNNINGFROM/.SSH"/* /.choko/.SSH/
-cp "$RUNNINGFROM/Start SSH server."* /.choko/
+if [ -f "/etc/ssh/sshd_config" ] && [ -f /.choko/S50sshd.original ]
+then
+  sed -i "/PermitRootLogin/c\PermitRootLogin yes" /etc/ssh/sshd_config
+  chmod 755 /.choko/S50sshd.original
+  cp "$RUNNINGFROM/Start SSH server."* /.choko/
+else
+  mkdir -p /.choko/.SSH
+  cp "$RUNNINGFROM/.SSH"/* /.choko/.SSH/
+  cp "$RUNNINGFROM/Start SSH server."* /.choko/
+fi
 echo "Menu option installed."
 sleep 3
 # Go back to Choko Menu

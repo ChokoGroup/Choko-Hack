@@ -1,9 +1,18 @@
 v12.3.0
+- "Safe reboot" and "Safe shutdown" key combos are disabled if the CHA is in USB Joystick Mode.
+- Fully compatible with older firmwares, no need to reinstall after upgrading firmware to v1.7
+- If CHA OS is about to be updated all Choko scripts are skipped and a special script is set to run next boot (to restore files overwritten by 1.7 update).
+- Fixed minor bug where default MENUCOUNTDOWN would be set to zero when going into settings.
+- Updated uninstaller script.
+- If SSH server from cha-1.7.img is running at boot, it is deactivated, use Choko Menu to activate server when needed.
+- Updated SSH server script to use server from cha-1.7.img, if present.
+- Check if SSH or FTP servers are already running before starting new server.
+
+v12.3.0 (pre release)
 - Improvements to official USB Joystick Mode in v1.7 firmware:
-  Avoid the need of HDMI to be connected to go into USB Joystick mode by reading Coin+Coin combo at boot.
+  Avoid the need of HDMI cable to be connected for USB Joystick mode by reading Coin1+Coin2 combo at boot.
   Add an option to make USB Joystick Mode persistent, instead of reseting every reboot.
-  Avoid USB Joystick Mode when Choko USB Loader is enabled.
-- User settings (countdown, wanted resolution, USB Joystick Mode persistence) are preserved after update.
+- User settings (Start1+Start2 at boot: countdown, wanted resolution, USB Joystick Mode persistence) are preserved after update.
 
 v12.2.0
 - Added an option to use "sun8i-h3-orangepi-pc.dtb" from 1.6 to allow Choko Hack to load items from USB and restore "sun8i-h3-orangepi-pc.dtb" from 1.7 to use the USB Joystick Mode.

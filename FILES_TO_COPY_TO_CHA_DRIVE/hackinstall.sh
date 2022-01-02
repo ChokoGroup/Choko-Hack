@@ -18,12 +18,12 @@ echo ""
 echo "            Y al que no le guste, [CENSORED BY THE AUDITOR]            "
 echo -e "\n\n\n\e[0m"
 
-if [ ! -e /mnt2/hackinstall.tar.gz ]
+if [ ! -f /mnt2/hackinstall.tar.gz ]
 then
 	echo -e "\e[0;31mFile hackinstall.tar.gz not found!\e[0m"
 	exit 1
 fi
-if [ ! -e /mnt2/original.boot.scr ]
+if [ ! -f /mnt2/original.boot.scr ]
 then
 	echo -e "\e[0;31mFile original.boot.scr not found!\e[0m"
 	exit 1
@@ -34,25 +34,32 @@ gzip -dc < /mnt2/hackinstall.tar.gz | tar xvf -
 RESULT=$?
 if [ $RESULT -eq 0 ]
 then
-  chown root:root /.choko
-  chown root:root /.choko/*
-  chown root:root /etc
-  chown root:root /etc/*
-  chown root:root /etc/init.d/*
-  chown root:root /root
-  chown root:root /root/.profile
-  chown root:root /usr
-  chown root:root /usr/*
-  chown root:root /usr/sbin/js2hid2
-  chown root:root /usr/sbin/readjoysticks
-  chmod 644 /.choko/*
-  chmod 755 /.choko/*.sh
-  chmod 755 /etc/init.d/S11chokopoweroff
-  chmod 755 /mnt/etc/init.d/S20joystick
-  chmod 755 /etc/init.d/S20usbcheck
-  chmod 755 /etc/init.d/S21capcom
-  chmod 755 /usr/sbin/js2hid2
-  chmod 755 /usr/sbin/readjoysticks
+  [ -f "/mnt/.choko/menu-1280x720.rgba" ] && rm "/mnt/.choko/menu-1280x720.rgba"
+  [ -f "/mnt/.choko/menu-1920x1080.rgba" ] && rm "/mnt/.choko/menu-1920x1080.rgba"
+  [ -f "/mnt/.choko/games1S.sh" ] && rm "/mnt/.choko/games1S.sh"
+  rm "/mnt/.choko/Activate Choko Hack USB Loader"*
+  rm "/mnt/.choko/Restore USB Joystick Mode"*
+  find /mnt/ -type f \( -iname "*.old" -or -iname "Thumbs.db" \) -exec rm -v {} +
+  [ -f "/mnt/etc/ssh/sshd_config" ] && sed -i "/PermitRootLogin/c\PermitRootLogin yes" /mnt/etc/ssh/sshd_config
+  chown root:root /mnt/.choko
+  chown root:root /mnt/.choko/*
+  chown root:root /mnt/etc
+  chown root:root /mnt/etc/*
+  chown root:root /mnt/etc/init.d/*
+  chown root:root /mnt/root
+  chown root:root /mnt/root/.profile
+  chown root:root /mnt/usr
+  chown root:root /mnt/usr/*
+  chown root:root /mnt/usr/sbin/js2hid2
+  chown root:root /mnt/usr/sbin/readjoysticks
+  chmod 644 /mnt/.choko/*
+  chmod 755 /mnt/.choko/*.sh
+  chmod 755 /mnt/.choko/S19chokohelper.choko
+  chmod 755 /mnt/.choko/S20joystick.choko
+  chmod 755 /mnt/.choko/S21capcom.choko
+  chmod 755 /mnt/etc/init.d/*
+  chmod 755 /mnt/usr/sbin/js2hid2
+  chmod 755 /mnt/usr/sbin/readjoysticks
 	rm /mnt2/hackinstall.tar.gz
 	mv /mnt2/original.boot.scr /mnt2/boot.scr
 fi
