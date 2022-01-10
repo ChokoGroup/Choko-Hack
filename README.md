@@ -61,4 +61,4 @@ Examples:
 The Capcom Home Arcade has two different physical versions: with SD card reader and without (the standard).
 Around 2000 units sold in Germany contains a SD Card Reader. If you have this SD Card reader, you can make the CHA boot from your SD card, the same way we can boot a PC from an USB disk or a DVD.
 
-But we can add a SD Card reader to any CHA that doesn't have it, just need soldering skills. Look at the file SD_card_reader.png for the type of adapter needed and go to https://github.com/lilo-san/cha-documentation#hardware for info on where it goes and more.
+But we can add a SD Card reader to any CHA that doesn't have it, just need soldering skills. Look at the file https://github.com/ChokoGroup/Choko-Hack/blob/main/SD_card_reader.png for the type of adapter needed and go to https://github.com/lilo-san/cha-documentation#hardware for info on where it goes and more.
