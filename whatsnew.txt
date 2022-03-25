@@ -1,3 +1,7 @@
+v13.4.0
+- Fixed a bug where moving one player joystick and pressing buttons from the other player would send buttons pressed for both players.
+- Improvements to "safe reboot/poweroff" to deal with fbneo emulator.
+
 v12.3.0
 - "Safe reboot" and "Safe shutdown" key combos are disabled if the CHA is in USB Joystick Mode.
 - Fully compatible with older firmwares, no need to reinstall after upgrading firmware to v1.7

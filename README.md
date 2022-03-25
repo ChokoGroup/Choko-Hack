@@ -1,4 +1,4 @@
-# Choko-Hack v12.3.0
+# Choko-Hack v12.4.0
 ### Choko Hack for the Capcom Home Arcade
 
 The Choko Hack will allow you to play more roms with the CHA original system. You can preserve the original software, add games or use an USB disk to play your roms.
@@ -13,7 +13,13 @@ Some notes:
 - This hack is a script loader, you need https://github.com/ChokoGroup/Choko-Hack-Automatic-Lists to create and load games lists.
 - If official list is the only option, the menu is skipped.
 - If there is only one USB option (other than 16 official games) it is automatically loaded (menu is skipped).
+- A default games list can be difined by selecting it and pressing Start (pressing Coin will reset the option).
 - Normal behaviour is joystick mode goes back to arcade mode after reboot, but If we change "joystick mode persistence" to Yes in settings (Start1+Start2) it will always boot into joystick mode until disabled with Coin1+Coin2 at boot.
+
+
+### What's new in v12.4.0
+- Fixed a bug where moving one player joystick and pressing buttons from the other player would send buttons pressed for both players.
+- Improvements to "safe reboot/poweroff" to deal with fbneo emulator ported to CHA: https://github.com/ChokoGroup/FBNeo
 
 
 ### What's new in v12.3.0
@@ -36,6 +42,7 @@ Read the file 'whatsnew.txt' to learn about what was new in past versions.
 ### Extras
 - 'SSH and FTP servers' (un)installer
 - 'Choko Hack Uninstaller' (why? I don't really know...)
+- Source code for the input readers
 
 
 ### Types of Mods
@@ -44,7 +51,7 @@ We have now 3 modifications that are independent and can be combined as we wish:
 
 A) Expand internal "disk" partition and add games to the original menu.
 
-B) Use an USB drive to expand "disk" space and add games to the original menu.
+B) Use an USB drive to expand "disk" space and add games to the original menu or play them with [FinalBurn Neo emulator](https://github.com/ChokoGroup/FBNeo).
 
 C) Use a different operating system (Lakka or Batocera), with all the advantages and disadvantages it may have.
 
