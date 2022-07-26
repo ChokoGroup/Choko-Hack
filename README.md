@@ -1,4 +1,4 @@
-# Choko-Hack v12.4.0
+# Choko-Hack v12.5.0
 ### Choko Hack for the Capcom Home Arcade
 
 The Choko Hack will allow you to play more roms with the CHA original system. You can preserve the original software, add games or use an USB disk to play your roms.
@@ -15,6 +15,11 @@ Some notes:
 - If there is only one USB option (other than 16 official games) it is automatically loaded (menu is skipped).
 - A default games list can be difined by selecting it and pressing Start (pressing Coin will reset the option).
 - Normal behaviour is joystick mode goes back to arcade mode after reboot, but If we change "joystick mode persistence" to Yes in settings (Start1+Start2) it will always boot into joystick mode until disabled with Coin1+Coin2 at boot.
+
+
+### What's new in v12.5.0
+- Improved compatibility with pendrives without partition table - some pendrives would not work simply because of the way they were formatted.
+Note: they still must be FAT32.
 
 
 ### What's new in v12.4.0
@@ -69,3 +74,10 @@ The Capcom Home Arcade has two different physical versions: with SD card reader 
 Around 2000 units sold in Germany contains a SD Card Reader. If you have this SD Card reader, you can make the CHA boot from your SD card, the same way we can boot a PC from an USB disk or a DVD.
 
 But we can add a SD Card reader to any CHA that doesn't have it, just need soldering skills. Look at the file https://github.com/ChokoGroup/Choko-Hack/blob/main/SD_card_reader.png for the type of adapter needed and go to https://github.com/lilo-san/cha-documentation#hardware for info on where it goes and more.
+
+
+###  Need help? Want to chat about CHA?
+
+Join the Discord Channel at https://discord.gg/JbJTUAhc66
+
+

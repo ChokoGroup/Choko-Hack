@@ -2,7 +2,7 @@
 # Choko Hack updater
 
 RUNNINGFROM="$(dirname "$(readlink -f "$0")")"
-echo -e "Your Choko Hack version in CHA is \"$CHOKOVERSION\"\nThis script will install version 12.4.0\n"
+echo -e "Your Choko Hack version in CHA is \"$CHOKOVERSION\"\nThis script will install version 12.5.0\n"
 
 if [ -f "${RUNNINGFROM}/hackinstall.tar.gz" ]
 then
