@@ -30,7 +30,8 @@ Note: they still must be FAT32.
 ### What's new in v12.3.0
 - Improvements to official USB Joystick Mode in v1.7 firmware:
   Avoid the need of HDMI cable to be connected for USB Joystick mode by reading Coin1+Coin2 combo at boot.
-  Add an option to make USB Joystick Mode persistent, instead of reseting every reboot.
+  Also added an option to make USB Joystick Mode persistent, instead of resetting every reboot.
+  Note: in USB Joystick Mode there is no need of using the CHA's power cable, it works connected only through EXT port.
 - User settings (Start1+Start2 at boot: countdown, wanted resolution, USB Joystick Mode persistence) are preserved after update.
 - "Safe reboot" and "Safe shutdown" key combos are disabled if the CHA is in USB Joystick Mode.
 - Fully compatible with older firmwares, no need to reinstall after upgrading firmware to v1.7
