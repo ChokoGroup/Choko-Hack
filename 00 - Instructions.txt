@@ -1,4 +1,4 @@
-INSTRUCTIONS for Choko Hack v12.3.0
+INSTRUCTIONS for Choko Hack v12.6.0
       ___           ___           ___           ___           ___     
      /\__\         /\  \         /\  \         /|  |         /\  \    
     /:/  /         \:\  \       /::\  \       |:|  |        /::\  \   
@@ -44,7 +44,7 @@ FIRST STEPS:  PREVIOUS SOFTWARE INSTALL AND USB PREPARATION
 
 Note: If you previously have modded a NES Mini / SNES Mini / MD Mini... you may already have installed Zadig drivers pack. Then, skip this part of the process.
 
-2. Download the latest CHOKO HACK SOFTWARE PACK and decompress the ZIP file to any folder in your PC hard drive.
+2. Download the latest CHOKO HACK SOFTWARE PACK and decompress the .7Z file to any folder in your PC hard drive. (Download here if you need 7-zip:  https://7-zip.org )
  
 
 ------------------------------------------------------------
@@ -61,11 +61,13 @@ Note: This method requires that you open the device just once.
 
 6. Locate the FEL Button (it is placed in the upper part of the board below three copper contacts triangular formation you are facing, next to the screw on the upper right part when it's turned upside down. It is in the main Printed Circuit (Orange Pi) Board - the one with HDMI, USB and USB EXT input. Introduce your finger diagonally from the left and you'll touch a small button.
 
-See the image file FEL_mode.png to help you locate the button.
+See the image file picture_FEL_mode_button.png to help you locate the button.
 
-7. WITH THE FEL BUTTON PRESSED, now insert the USB male into CHA USB EXT port. You will then hear Windows detect sound. Release the button. The same process goes for Linux. Don't use the Micro-USB cable to load as CHA will receive power from USB EXT too and therefore it is not necessary.
+7. WITH THE FEL BUTTON PRESSED, now insert the USB male into CHA USB EXT port. You will then hear Windows "device detected sound". Release the button. The same process goes for Linux. Don't use the Micro-USB cable to load as CHA will receive power from USB EXT too and therefore it is not necessary.
 
 8. Open the extracted CHA_FEL_MODE folder and run 'start.bat' (if you are using Windows) or start.sh (if you are using Linux). Press <Enter> when it asks for it.
+
+For future reference, everytime we want to connect in FEL mode, start.bat (or start.sh) needs to run before we can access the files in CHA.
 
 9. Once you've run that, TWO new drive UNITS will appear if you are using LINUX / ONE UNIT if you are using WINDOWS. These are part of the internal storage eMMC of the CHA. If it doesn't show up, go to Disk Manager and add a letter to the first partition of the CHA.
 
@@ -86,11 +88,11 @@ Note: If there are any files with .old extension you can delete them. They are l
 FIRST TIME BOOT:  INSTALLING SCRIPTS TO ENABLE USB UNIT.
 ------------------------------------------------------------
 
-14. The next time you power on the CHA it will install the necessary files to use be able to load games from folders in USB pendisk. You should see some confirmation messages and it will automatically reboot twice.
+14. The next time you power on the CHA it will install the necessary files to load games from folders in USB pendisk. You should see some confirmation messages and it will automatically reboot.
 
 15. Now you'll see, at every boot, a purple message informing that you can safely power off the CHA at any time by pressing and holding [P1 I] + [P1 D] + [P2 I] + [P2 D] or reboot with [P1 S] + [P1 D] + [P2 S] + [P2 D].
 
-16. Another line informs that pressing [P1 Start] + [P2 Start] goes to settings (change the USB and the Menu timeout limits, also screen resolution and USB Joystick Mode persistence), followed by a small countdown while searching for any USB pendrive.
+16. Another line informs that pressing [P1 Start] + [P2 Start] goes to settings (change the USB and the Menu timeout limits, also screen resolution and USB Joystick Mode persistence and, in firmware 1.7+, a nice easter egg: Golden UI), followed by a small countdown while searching for any USB pendrive.
 
 Note: If you start the CHA without any USB drive (or without folders containing 'usb_exec.sh' scripts) inserted, it will resume boot to the original firmware with the 16 official games.
 

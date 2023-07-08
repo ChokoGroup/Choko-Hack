@@ -1,0 +1,7 @@
+ctrl_interface=/var/run/wpa_supplicant
+ap_scan=1
+network={
+  # Network name and password must be between double quotes
+  ssid="REPLACE WITH WIFI NAME"
+  psk="REPLACE WITH WIFI PASSWORD"
+}

@@ -1,5 +1,9 @@
-# Choko-Hack v12.5.0
+# Choko-Hack v12.6.0
 ### Choko Hack for the Capcom Home Arcade
+
+
+<p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/screenshot_golden_UI.png" style="width:40%"></p>
+
 
 The Choko Hack will allow you to play more roms with the CHA original system. You can preserve the original software, add games or use an USB disk to play your roms.
 
@@ -10,39 +14,35 @@ You can also look into the 'Video Guide.gif' - it's a little outdated but still 
 Download the installer, updater or system images with the hack already installed from https://github.com/ChokoGroup/Choko-Hack/releases/latest
 
 Some notes:
-- This hack is a script loader, you need https://github.com/ChokoGroup/Choko-Hack-Automatic-Lists to create and load games lists.
+- This hack is a script loader, you need https://github.com/ChokoGroup/Choko-Hack-Automatic-Lists to create and load games lists with your ROMs, or you can also try [FinalBurn Neo emulator for CHA](https://github.com/ChokoGroup/FBNeo/tree/fbneo-CHA).
 - If official list is the only option, the menu is skipped.
 - If there is only one USB option (other than 16 official games) it is automatically loaded (menu is skipped).
-- A default games list can be difined by selecting it and pressing Start (pressing Coin will reset the option).
-- Normal behaviour is joystick mode goes back to arcade mode after reboot, but If we change "joystick mode persistence" to Yes in settings (Start1+Start2) it will always boot into joystick mode until disabled with Coin1+Coin2 at boot.
+- A default games list can be difined by selecting it and pressing Start (pressing Coin will reset the option to the first item of the list).
+- Normal behaviour is joystick mode goes back to arcade mode after reboot, but If we change "joystick mode persistence" to Yes in settings (P1 Start + P2 Start) it will always boot into joystick mode **until disabled with P1 Coin + P2 Coin at boot**.
 
 
-### What's new in v12.5.0
-- Improved compatibility with pendrives without partition table - some pendrives would not work simply because of the way they were formatted.
-Note: they still must be FAT32.
+<p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/choko_menu_help.png" style="width:60%"></p>
 
 
-### What's new in v12.4.0
-- Fixed a bug where moving one player joystick and pressing buttons from the other player would send buttons pressed for both players.
-- Improvements to "safe reboot/poweroff" to deal with fbneo emulator ported to CHA: https://github.com/ChokoGroup/FBNeo
+### What's new in v12.6.0
+
+- Great estability improvements. Hopefully, lots of under-the-hood changes will give us NO MORE CORRUPTED USB DISKS!
+- New check for script files modified by Windows or Macintosh users, and convert to Linux EOL style if needed.
+- New setting to unlock or disable Golden UI Choko easter-egg.
+- If a file named `wpa_supplicant.conf` is included in installer/updater folder, it will be copied to the CHA. This allows to automatically configure WiFi. See the example file `wpa_supplicant.conf.example` included.
+- Avoid that automatic execution of a single script from USB runs again automatically if returning to Choko Menu.
+- Detect when official firmware update failed to download/install some files, alert the user and eventually start firmware reinstallation.
+- Fixed not reading USB disk after firmware update.
+- Fixed screen resolution setting going back to auto after firmware update.
+- Fixed firmware update writing boot files in eMMC when using SD card.
+- Visual improvements in settings menu and on reboot and shutdown, with color and "animation" (dots will be added until the machine is really shutdown).
+
+Don't forget to also update your [Automatic Games Lists pack](https://github.com/ChokoGroup/Choko-Hack-Automatic-Lists).
+
+Read the file 'what_was_new.txt' to learn about what was new in past versions.
 
 
-### What's new in v12.3.0
-- Improvements to official USB Joystick Mode in v1.7 firmware:
-  Avoid the need of HDMI cable to be connected for USB Joystick mode by reading Coin1+Coin2 combo at boot.
-  Also added an option to make USB Joystick Mode persistent, instead of resetting every reboot.
-  Note: in USB Joystick Mode there is no need of using the CHA's power cable, it works connected only through EXT port.
-- User settings (Start1+Start2 at boot: countdown, wanted resolution, USB Joystick Mode persistence) are preserved after update.
-- "Safe reboot" and "Safe shutdown" key combos are disabled if the CHA is in USB Joystick Mode.
-- Fully compatible with older firmwares, no need to reinstall after upgrading firmware to v1.7
-- If CHA OS is about to be updated all Choko scripts are skipped and a special script is set to run next boot (to restore files overwritten by 1.7 update).
-- Fixed minor bug where default MENUCOUNTDOWN would be set to zero when going into settings.
-- Updated uninstaller script.
-- If SSH server from cha-1.7.img is running at boot, it is deactivated, use Choko Menu to activate server when needed.
-- Updated SSH server script to use server from cha-1.7.img, if present.
-- Check if SSH or FTP servers are already running before starting new server.
-
-Read the file 'whatsnew.txt' to learn about what was new in past versions.
+<p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/screenshot_Choko_Menu.png" style="width:25%"> <img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/screenshot_Choko_Menu_settings.png" style="width:25%"> <img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/Screenshot_Shutdown_messages.png" style="width:25%"></p>
 
 
 ### Extras
@@ -57,11 +57,11 @@ We have now 3 modifications that are independent and can be combined as we wish:
 
 A) Expand internal "disk" partition and add games to the original menu.
 
-B) Use an USB drive to expand "disk" space and add games to the original menu or play them with [FinalBurn Neo emulator](https://github.com/ChokoGroup/FBNeo).
+B) Use an USB drive to expand "disk" space and add games to the original menu or play them with [FinalBurn Neo emulator for CHA](https://github.com/ChokoGroup/FBNeo/tree/fbneo-CHA).
 
 C) Use a different operating system (Lakka or Batocera), with all the advantages and disadvantages it may have.
 
-We can use one of this modifications, we can combine 2 or we can use them all.
+We can use one of this modifications, we can combine two or we can use them all.
 
 Examples:
 - Use only B and leave CHA running the original system by default, with 16 games. But when in the mood to play "X-Men vs Street Fighter", put the usb disk and add it to the list.

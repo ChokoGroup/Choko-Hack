@@ -1,4 +1,4 @@
-# ! /bin/sh
+#!/bin/sh
 # For Choko Hack 12.0.0+
 
 # Simple string compare, since until 10.0.0 CHOKOVERSION wasn't set
