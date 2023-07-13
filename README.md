@@ -1,4 +1,4 @@
-# Choko-Hack v12.3.0
+# Choko-Hack v13.0.0
 ### Choko Hack for the Capcom Home Arcade
 
 
@@ -24,7 +24,7 @@ Some notes:
 <p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/choko_menu_help.png" style="width:60%"></p>
 
 
-### What's new in v12.3.0
+### What's new in v13.0.0
 
 - Great estability improvements. Hopefully, lots of under-the-hood changes will give us NO MORE CORRUPTED USB DISKS!
 - New check for script files modified by Windows or Macintosh users, and convert to Linux EOL style if needed.
