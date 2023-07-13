@@ -1,5 +1,5 @@
 #!/bin/sh
-# Choko Hack installer 12.6.0
+# Choko Hack installer 13.0.0
 
 echo -e "\n\n\e[0;35m"
 echo "      ___           ___           ___           ___           ___      "
@@ -43,6 +43,7 @@ then
   [ -f "/mnt2/wpa_supplicant.conf" ] && cp /mnt2/wpa_supplicant.conf /mnt/etc/
   chown -f root:root /mnt/.choko
   chown -f root:root /mnt/.choko/*
+  chown -f root:root /mnt/bin/bash
   chown -f root:root /mnt/boot
   chown -f root:root /mnt/etc
   chown -f root:root /mnt/etc/*
@@ -57,6 +58,7 @@ then
   chmod -f 755 /mnt/.choko/*.sh
   chmod -f 755 /mnt/.choko/S20joystick.choko
   chmod -f 755 /mnt/.choko/S21capcom.choko
+  chmod -f 755 /mnt/bin/bash
   chmod -f 755 /mnt/boot
   chmod -f 755 /mnt/etc/init.d/*
   chmod -f 755 /mnt/usr/sbin/js2hid2

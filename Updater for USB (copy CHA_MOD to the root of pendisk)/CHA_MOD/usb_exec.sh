@@ -1,8 +1,8 @@
 #!/bin/sh
-# Choko Hack updater 12.6.0
+# Choko Hack updater 13.0.0
 
 RUNNINGFROM="$(dirname "$(readlink -f "$0")")"
-echo -e "Your Choko Hack version in CHA is \"$CHOKOVERSION\"\nThis script will install version 12.6.0\n"
+echo -e "Your Choko Hack version in CHA is \"$CHOKOVERSION\"\nThis script will install version 13.0.0\n"
 
 if [ -f "${RUNNINGFROM}/hackinstall.tar.gz" ]
 then
@@ -26,6 +26,7 @@ then
     [ -f "${RUNNINGFROM}/wpa_supplicant.conf" ] && cp "${RUNNINGFROM}/wpa_supplicant.conf" /etc/
     chown -f root:root /.choko
     chown -f root:root /.choko/*
+    chown -f root:root /bin/bash
     chown -f root:root /boot
     chown -f root:root /etc
     chown -f root:root /etc/*
@@ -40,6 +41,7 @@ then
     chmod -f 755 /.choko/*.sh
     chmod -f 755 /.choko/S20joystick.choko
     chmod -f 755 /.choko/S21capcom.choko
+    chmod -f 755 /bin/bash
     chmod -f 755 /boot
     chmod -f 755 /etc/init.d/*
     chmod -f 755 /usr/sbin/js2hid2

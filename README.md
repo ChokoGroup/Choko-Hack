@@ -1,8 +1,8 @@
-# Choko-Hack v12.6.0
+# Choko-Hack v12.3.0
 ### Choko Hack for the Capcom Home Arcade
 
 
-<p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/screenshot_golden_UI.png" style="width:40%"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/screenshot_golden_UI.png" style="width:60%"></p>
 
 
 The Choko Hack will allow you to play more roms with the CHA original system. You can preserve the original software, add games or use an USB disk to play your roms.
@@ -24,7 +24,7 @@ Some notes:
 <p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/choko_menu_help.png" style="width:60%"></p>
 
 
-### What's new in v12.6.0
+### What's new in v12.3.0
 
 - Great estability improvements. Hopefully, lots of under-the-hood changes will give us NO MORE CORRUPTED USB DISKS!
 - New check for script files modified by Windows or Macintosh users, and convert to Linux EOL style if needed.
@@ -35,7 +35,9 @@ Some notes:
 - Fixed not reading USB disk after firmware update.
 - Fixed screen resolution setting going back to auto after firmware update.
 - Fixed firmware update writing boot files in eMMC when using SD card.
+- Improved logic when there are too many menu options (games lists), making sure that the official games list is always visible and info line does not leave the menu when selected.
 - Visual improvements in settings menu and on reboot and shutdown, with color and "animation" (dots will be added until the machine is really shutdown).
+- Added bash shell and rewriten ChoKo Menu code using arrays.
 
 Don't forget to also update your [Automatic Games Lists pack](https://github.com/ChokoGroup/Choko-Hack-Automatic-Lists).
 
