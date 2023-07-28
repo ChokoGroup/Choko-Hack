@@ -37,6 +37,8 @@ then
     chown -f root:root /usr/*
     chown -f root:root /usr/bin
     chown -f root:root /usr/bin/bash
+    chown -f root:root /usr/bin/poweroff
+    chown -f root:root /usr/bin/reboot
     chown -f root:root /usr/sbin
     chown -f root:root /usr/sbin/js2hid2
     chown -f root:root /usr/sbin/readjoysticks
@@ -57,6 +59,8 @@ then
     chmod -f 755 /usr
     chmod -f 755 /usr/bin
     chmod -f 755 /usr/bin/bash
+    chmod -f 755 /usr/bin/poweroff
+    chmod -f 755 /usr/bin/reboot
     chmod -f 755 /usr/sbin
     chmod -f 755 /usr/sbin/js2hid2
     chmod -f 755 /usr/sbin/readjoysticks
