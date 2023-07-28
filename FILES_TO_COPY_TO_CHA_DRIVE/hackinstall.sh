@@ -43,28 +43,42 @@ then
   [ -f "/mnt2/wpa_supplicant.conf" ] && cp /mnt2/wpa_supplicant.conf /mnt/etc/
   chown -f root:root /mnt/.choko
   chown -f root:root /mnt/.choko/*
-  chown -f root:root /mnt/bin/bash
   chown -f root:root /mnt/boot
   chown -f root:root /mnt/etc
   chown -f root:root /mnt/etc/*
+  chown -f root:root /mnt/etc/init.d
   chown -f root:root /mnt/etc/init.d/*
   chown -f root:root /mnt/root
   chown -f root:root /mnt/root/.profile
   chown -f root:root /mnt/usr
   chown -f root:root /mnt/usr/*
+  chown -f root:root /mnt/usr/bin
+  chown -f root:root /mnt/usr/bin/bash
+  chown -f root:root /mnt/usr/sbin
   chown -f root:root /mnt/usr/sbin/js2hid2
   chown -f root:root /mnt/usr/sbin/readjoysticks
+  chmod -f 755 /mnt/.choko
   chmod -f 644 /mnt/.choko/*
   chmod -f 755 /mnt/.choko/*.sh
+  chmod -f 755 /mnt/.choko/busybox
   chmod -f 755 /mnt/.choko/S20joystick.choko
   chmod -f 755 /mnt/.choko/S21capcom.choko
-  chmod -f 755 /mnt/bin/bash
+  chmod -f 755 /mnt/.choko/S40network.choko
   chmod -f 755 /mnt/boot
+  chmod -f 755 /mnt/etc
+  chmod -f 600 /mnt/etc/shadow
+  chmod -f 755 /mnt/etc/init.d
   chmod -f 755 /mnt/etc/init.d/*
+  chmod -f 700 /mnt/root
+  chmod -f 600 /mnt/root/.profile
+  chmod -f 755 /mnt/usr
+  chmod -f 755 /mnt/usr/bin
+  chmod -f 755 /mnt/usr/bin/bash
+  chmod -f 755 /mnt/usr/sbin
   chmod -f 755 /mnt/usr/sbin/js2hid2
   chmod -f 755 /mnt/usr/sbin/readjoysticks
-	mv /mnt2/original.boot.scr /mnt2/boot.scr
-	rm /mnt2/hackinstall.tar.gz
+  mv /mnt2/original.boot.scr /mnt2/boot.scr
+  rm /mnt2/hackinstall.tar.gz
 fi
 cd /mnt2
 exit $RESULT

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Choko Hack v 12.4.0 Uninstaller
+# Choko Hack v 13.0.0 Uninstaller
 
 # Wait for buttons to be released before asking to delete
 while [ "$(readjoysticks j1 j2 -b)" != "0000000000000000" ]
@@ -52,12 +52,13 @@ then
   [ -f /usr/sbin/js2hid2 ] && rm /usr/sbin/js2hid2
   [ -f /usr/sbin/readjoysticks ] && rm /usr/sbin/readjoysticks
   [ -f /usr/sbin/evtest ] && rm /usr/sbin/evtest
+  [ -f /bin/bash ] && rm /bin/bash
   [ -f /root/.profile ] && rm /root/.profile
   exit 201
 fi
 
 sleep 3
-if [ "$CHOKOVERSION" \< "10.0.0" ]
+if [ -z "$CHOKOVERSION" ] || [ "$CHOKOVERSION" \< "10.0.0" ]
 then
   reboot -f
 else

@@ -5,7 +5,7 @@
 # Start FTP server if it exists
 if [ -x "/.choko/.FTP/uFTP" ]
 then
-  if [ -n "$(pidof dropbear)" ]
+  if [ -n "$(pidof uFTP)" ]
   then
     echo "FTP server is already running!"
   else
