@@ -28,8 +28,8 @@ Some notes:
 
 ### What's new in v13.0.0
 
-- Great stability improvements. Hopefully, lots of under-the-hood changes will give us NO MORE CORRUPTED USB DISKS!
-  Even if the CHA is turned off abruptly, Windows will say the pendisk need to be checked, but after checking it should report "no errors found".
+- Almost completely rewritten scripts and lots of under-the-hood changes should give us NO MORE CORRUPTED USB DISKS!
+  We can't really promise 100% will never happen, of course, but even if the CHA is turned off abruptly, and Windows saying the pendisk need to be checked, it should report "no errors found" after checking.
 - Rewritten safe reboot/shutdown scripts.
   Note: after a crash, sometimes the safe reboot/shutdown buttons combo can take some time to be detected. Please hold the buttons until the screen shows the shutdown/reboot messages.
 - New option in settings menu to download and install updates from GitHub.
@@ -43,7 +43,7 @@ Some notes:
 - Avoid that automatic execution of a single script from USB runs again automatically if returning to Choko Menu.
 - Improved logic when there are too many menu options (games lists), making sure that the official games list is always visible and info line does not leave the menu when selected.
 - Visual improvements in settings menu, on reboot and shutdown messages, with color and "animation" (dots will be added until the machine is really shutdown).
-- Added bash shell and rewriten ChoKo Menu code using arrays.
+- Added bash shell and rewritten ChoKo Menu code using arrays.
 - Added a newer 'busybox' binary to allow download of Choko Hack updater, the fbneo core file for Automatic Games Lists and also FBNeo for CHA (and cheats). It is also used to automatically set system date and time.
 - Many other small tweaks and fixes in installer/updater and other scripts.
 
