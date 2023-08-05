@@ -1,8 +1,8 @@
 #!/bin/sh
-# Choko Hack updater 13.0.0
+# Choko Hack updater 13.1.0
 
 _var_running_from_folder="$(dirname "$(readlink -f "$0")")"
-echo -e "Current Choko Hack version is \"$CHOKOVERSION\"\nThis script will install version 13.0.0\n"
+echo -e "Current Choko Hack version is \"$CHOKOVERSION\"\nThis script will install version 13.1.0\n"
 
 if [ -f "${_var_running_from_folder}/hackinstall.tar.gz" ]
 then
@@ -13,6 +13,7 @@ then
   eval "$(grep -m 1 '_var_menu_default_option=' /etc/init.d/S20usbcheck)"
   eval "$(grep -m 1 '_var_persistent_Joystick_Mode=' /etc/init.d/S20usbcheck)"
   eval "$(grep -m 1 '_var_Golden_UI_easter_egg=' /etc/init.d/S20usbcheck)"
+  eval "$(grep -m 1 '_var_menu_font_filename=' /etc/init.d/S20usbcheck)"
   cd /
   gzip -dc < "${_var_running_from_folder}/hackinstall.tar.gz" | tar xvf - 
   RESULT=$?
@@ -39,9 +40,15 @@ then
     chown -f root:root /usr/bin/bash
     chown -f root:root /usr/bin/poweroff
     chown -f root:root /usr/bin/reboot
+    chown -f root:root /usr/bin/setfont
     chown -f root:root /usr/sbin
     chown -f root:root /usr/sbin/js2hid2
     chown -f root:root /usr/sbin/readjoysticks
+    chown -f root:root /usr/share
+    chown -f root:root /usr/share/ca-certificates
+    chown -f root:root /usr/share/ca-certificates/mozilla
+    chown -f root:root /usr/share/consolefonts
+    chown -f root:root /usr/share/consolefonts/*
     chmod -f 755 /.choko
     chmod -f 644 /.choko/*
     chmod -f 755 /.choko/*.sh
@@ -61,9 +68,15 @@ then
     chmod -f 755 /usr/bin/bash
     chmod -f 755 /usr/bin/poweroff
     chmod -f 755 /usr/bin/reboot
+    chmod -f 755 /usr/bin/setfont
     chmod -f 755 /usr/sbin
     chmod -f 755 /usr/sbin/js2hid2
     chmod -f 755 /usr/sbin/readjoysticks
+    chmod -f 755 /usr/share
+    chmod -f 755 /usr/share/ca-certificates
+    chmod -f 755 /usr/share/ca-certificates/mozilla
+    chmod -f 755 /usr/share/consolefonts
+    chmod -f 644 /usr/share/consolefonts/*
     [ -n "$_var_wanted_screen_resolution" ] && sed -i -e "/.*_var_wanted_screen_resolution\=.*/{s//_var_wanted_screen_resolution=\"$_var_wanted_screen_resolution\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     [ -n "$_var_wait_for_USB_countdown" ] && sed -i -e "/.*_var_wait_for_USB_countdown\=.*/{s//    _var_wait_for_USB_countdown=$_var_wait_for_USB_countdown/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     [ -n "$_var_wait_in_menu_countdown" ] && sed -i -e "/.*_var_wait_in_menu_countdown\=.*/{s//    _var_wait_in_menu_countdown=$_var_wait_in_menu_countdown/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
@@ -71,6 +84,7 @@ then
     [ -n "$_var_menu_default_option" ] && sed -i -e "/.*_var_menu_default_option\=.*/{s//    _var_menu_default_option=\"$_var_menu_default_option\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     [ -n "$_var_persistent_Joystick_Mode" ] && sed -i -e "/.*_var_persistent_Joystick_Mode\=.*/{s//    _var_persistent_Joystick_Mode=\"$_var_persistent_Joystick_Mode\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     [ -n "$_var_Golden_UI_easter_egg" ] && sed -i -e "/.*_var_Golden_UI_easter_egg\=.*/{s//    _var_Golden_UI_easter_egg=\"$_var_Golden_UI_easter_egg\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
+    [ -n "$_var_menu_font_filename" ] && sed -i -e "/.*_var_menu_font_filename\=.*/{s//    _var_menu_font_filename=\"${array_of_fonts[_var_selected_index]}\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     touch /tmp/donotruncapcom
     echo -e "\nChoko Hack updated.\n"
   else

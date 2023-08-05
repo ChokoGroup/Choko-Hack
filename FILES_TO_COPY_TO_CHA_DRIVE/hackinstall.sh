@@ -1,5 +1,5 @@
 #!/bin/sh
-# Choko Hack installer 13.0.0
+# Choko Hack installer 13.1.0
 
 echo -e "\n\n\e[0;35m"
 echo "      ___           ___           ___           ___           ___      "
@@ -56,9 +56,15 @@ then
   chown -f root:root /mnt/usr/bin/bash
   chown -f root:root /mnt/usr/bin/poweroff
   chown -f root:root /mnt/usr/bin/reboot
+  chown -f root:root /mnt/usr/bin/setfont
   chown -f root:root /mnt/usr/sbin
   chown -f root:root /mnt/usr/sbin/js2hid2
   chown -f root:root /mnt/usr/sbin/readjoysticks
+  chown -f root:root /mnt/usr/share
+  chown -f root:root /mnt/usr/share/ca-certificates
+  chown -f root:root /mnt/usr/share/ca-certificates/mozilla
+  chown -f root:root /mnt/usr/share/consolefonts
+  chown -f root:root /mnt/usr/share/consolefonts/*
   chmod -f 755 /mnt/.choko
   chmod -f 644 /mnt/.choko/*
   chmod -f 755 /mnt/.choko/*.sh
@@ -78,9 +84,15 @@ then
   chmod -f 755 /mnt/usr/bin/bash
   chmod -f 755 /mnt/usr/bin/poweroff
   chmod -f 755 /mnt/usr/bin/reboot
+  chmod -f 755 /mnt/usr/bin/setfont
   chmod -f 755 /mnt/usr/sbin
   chmod -f 755 /mnt/usr/sbin/js2hid2
   chmod -f 755 /mnt/usr/sbin/readjoysticks
+  chmod -f 755 /mnt/usr/share
+  chmod -f 755 /mnt/usr/share/ca-certificates
+  chmod -f 755 /mnt/usr/share/ca-certificates/mozilla
+  chmod -f 755 /mnt/usr/share/consolefonts
+  chmod -f 644 /mnt/usr/share/consolefonts/*
   mv /mnt2/original.boot.scr /mnt2/boot.scr
   rm /mnt2/hackinstall.tar.gz
 fi

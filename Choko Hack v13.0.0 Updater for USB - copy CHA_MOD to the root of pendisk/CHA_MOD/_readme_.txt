@@ -1,4 +1,4 @@
-# Choko-Hack v13.0.0
+# Choko-Hack v13.1.0
 ### Choko Hack for the Capcom Home Arcade
 
 
@@ -24,6 +24,12 @@ Some notes:
 
 
 <p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/choko_menu_help.png" style="width:60%"></p>
+
+
+### What's new in v13.1.0
+
+- New option in settings (P1 Start + P2 Start during boot USB countdown) to resize font used on screen, useful with 4K TV.
+- Disabled menu countdown after chaging settings.
 
 
 ### What's new in v13.0.0
