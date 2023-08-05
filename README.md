@@ -29,7 +29,7 @@ Some notes:
 ### What's new in v13.1.0
 
 - New option in settings (P1 Start + P2 Start during boot USB countdown) to resize font used on screen, useful with 4K TV.
-- Disabled menu countdown after chaging settings.
+- Disabled menu countdown after changing settings.
 
 
 ### What's new in v13.0.0
