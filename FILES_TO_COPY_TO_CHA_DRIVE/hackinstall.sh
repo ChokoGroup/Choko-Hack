@@ -24,11 +24,6 @@ then
 	echo -e "\e[0;31mFile hackinstall.tar.gz not found!\e[m"
 	exit 1
 fi
-if [ ! -f /mnt2/original.boot.scr ]
-then
-	echo -e "\e[0;31mFile original.boot.scr not found!\e[m"
-	exit 1
-fi
 
 cd /mnt
 gzip -dc < /mnt2/hackinstall.tar.gz | tar xvf - 
@@ -93,8 +88,8 @@ then
   chmod -f 755 /mnt/usr/share/ca-certificates/mozilla
   chmod -f 755 /mnt/usr/share/consolefonts
   chmod -f 644 /mnt/usr/share/consolefonts/*
-  mv /mnt2/original.boot.scr /mnt2/boot.scr
   rm /mnt2/hackinstall.tar.gz
+  cp /mnt/.choko/original.boot.scr /mnt2/boot.scr
 fi
 cd /mnt2
 exit $RESULT

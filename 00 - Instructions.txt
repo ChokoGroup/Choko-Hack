@@ -75,9 +75,9 @@ Note: If Windows asks to format the "new" drive, don't do it... Just CANCEL!
 
 10. You can make a copy the three files from this new unit (boot.scr, sun8i-h3-orangepi-pc.dtb and zImage) to a backup folder in your PC Hard Drive, if for any reason you need to restore them.
 
-Note: If there are any files with .old extension you can delete them. They are left after CHA 1.6+ Update and the space will be needed.
+11. Copy the files in the 'FILES_TO_COPY_TO_CHA_DRIVE' folder (boot.scr, hackinstall.sh, hackinstall.tar.gz, and uIntitrd-CHA-MOD) to the new unit, overwriting if necessary.
 
-11. Copy the files in the 'FILES_TO_COPY_TO_CHA_DRIVE' folder (boot.scr, hackinstall.sh, hackinstall.tar.gz, original.boot.scr and uIntitrd-CHA-MOD) to the new unit, overwriting if necessary.
+Note: If Windows complains there is not enough free space, delete any files with `.old` extension, also delete `boot.scr` from the CHA before copying the hack files and don't copy the file `wpa_supplicant.conf.example`.
 
 12. Wait around 5 seconds and eject/unmount the CHA drive safely.
 
@@ -90,9 +90,9 @@ FIRST TIME BOOT:  INSTALLING SCRIPTS TO ENABLE USB UNIT.
 
 14. The next time you power on the CHA it will install the necessary files to load games from folders in USB pendisk. You should see some confirmation messages and it will automatically reboot.
 
-15. Now you'll see, at every boot, a purple message informing that you can safely power off the CHA at any time by pressing and holding [P1 I] + [P1 D] + [P2 I] + [P2 D] or reboot with [P1 S] + [P1 D] + [P2 S] + [P2 D].
+15. Now you'll see, at every boot, a purple message with Choko version, plus some lines informing that you can safely power off the CHA at any time by pressing and holding [P1 I] + [P1 D] + [P2 I] + [P2 D] or reboot with [P1 S] + [P1 D] + [P2 S] + [P2 D].
 
-16. Another line informs that pressing [P1 Start] + [P2 Start] goes to settings (change the USB and the Menu timeout limits, also screen resolution and USB Joystick Mode persistence and, in firmware 1.7+, a nice easter egg: Golden UI), followed by a small countdown while searching for any USB pendrive.
+16. Another line informs that pressing [P1 Start] + [P2 Start] goes to settings (online updater; change the USB and the Menu timeout limits; screen resolution; font size; USB Joystick Mode persistence and, in firmware 1.7+, a nice easter egg: Golden UI), followed by a small countdown while searching for any USB pendrive.
 
 Note: If you start the CHA without any USB drive (or without folders containing 'usb_exec.sh' scripts) inserted, it will resume boot to the original firmware with the 16 official games.
 

@@ -30,6 +30,8 @@ Some notes:
 
 - New option in settings (P1 Start + P2 Start during boot USB countdown) to resize font used on screen, useful with 4K TV.
 - Disabled menu countdown after changing settings.
+- Skip USB countdown pressing [P1 D] + [P2 D] (see choko_menu_help.png for all buttons functions).
+- Optimize hack installer and compression to fit in free space of first partition.
 
 
 ### What's new in v13.0.0
@@ -96,5 +98,3 @@ But we can add a SD Card reader to any CHA that doesn't have it, just need solde
 ###  Need help? Want to chat about CHA?
 
 Join the Discord Channel at https://discord.gg/JbJTUAhc66
-
-
