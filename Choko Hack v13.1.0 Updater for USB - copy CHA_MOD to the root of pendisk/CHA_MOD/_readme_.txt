@@ -32,6 +32,7 @@ Some notes:
 - Disabled menu countdown after changing settings.
 - Skip USB countdown pressing [P1 D] + [P2 D] (see choko_menu_help.png for all buttons functions).
 - Optimize hack installer and compression to fit in free space of first partition.
+- Moved version info to avoid being overwritten by menu countdown.
 
 
 ### What's new in v13.0.0
