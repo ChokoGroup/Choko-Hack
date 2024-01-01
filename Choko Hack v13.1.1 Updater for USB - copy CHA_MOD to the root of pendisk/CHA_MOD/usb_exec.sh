@@ -84,7 +84,7 @@ then
     [ -n "$_var_menu_default_option" ] && sed -i -e "/.*_var_menu_default_option\=.*/{s//    _var_menu_default_option=\"$_var_menu_default_option\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     [ -n "$_var_persistent_Joystick_Mode" ] && sed -i -e "/.*_var_persistent_Joystick_Mode\=.*/{s//    _var_persistent_Joystick_Mode=\"$_var_persistent_Joystick_Mode\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     [ -n "$_var_Golden_UI_easter_egg" ] && sed -i -e "/.*_var_Golden_UI_easter_egg\=.*/{s//    _var_Golden_UI_easter_egg=\"$_var_Golden_UI_easter_egg\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
-    [ -n "$_var_menu_font_name" ] && sed -i -e "/.*_var_menu_font_name\=.*/{s//    _var_menu_font_name=\"${array_of_fonts[_var_selected_index]}\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
+    [ -n "$_var_menu_font_name" ] && sed -i -e "/.*_var_menu_font_name\=.*/{s//    _var_menu_font_name=\"$_var_menu_font_name\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     touch /tmp/donotruncapcom
     echo -e "\nChoko Hack updated.\n"
   else
