@@ -1,4 +1,4 @@
-# Choko-Hack v13.1.0
+# Choko-Hack v13.1.1
 ### Choko Hack for the Capcom Home Arcade
 
 
@@ -24,6 +24,11 @@ Some notes:
 
 
 <p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/choko_menu_help.png" style="width:60%"></p>
+
+
+### What's new in v13.1.1
+
+- Fix: unusual pendisks without partition table could be mounted but would not be safely unmounted when rebooting/shutting down.
 
 
 ### What's new in v13.1.0
