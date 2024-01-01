@@ -1,8 +1,8 @@
 #!/bin/sh
-# Choko Hack updater 13.1.0
+# Choko Hack updater 13.1.1
 
 _var_running_from_folder="$(dirname "$(readlink -f "$0")")"
-echo -e "Current Choko Hack version is \"$CHOKOVERSION\"\nThis script will install version 13.1.0\n"
+echo -e "Current Choko Hack version is \"$CHOKOVERSION\"\nThis script will install version 13.1.1\n"
 
 if [ -f "${_var_running_from_folder}/hackinstall.tar.gz" ]
 then
@@ -13,7 +13,7 @@ then
   eval "$(grep -m 1 '_var_menu_default_option=' /etc/init.d/S20usbcheck)"
   eval "$(grep -m 1 '_var_persistent_Joystick_Mode=' /etc/init.d/S20usbcheck)"
   eval "$(grep -m 1 '_var_Golden_UI_easter_egg=' /etc/init.d/S20usbcheck)"
-  eval "$(grep -m 1 '_var_menu_font_filename=' /etc/init.d/S20usbcheck)"
+  eval "$(grep -m 1 '_var_menu_font_name=' /etc/init.d/S20usbcheck)"
   cd /
   gzip -dc < "${_var_running_from_folder}/hackinstall.tar.gz" | tar xvf - 
   RESULT=$?
@@ -84,7 +84,7 @@ then
     [ -n "$_var_menu_default_option" ] && sed -i -e "/.*_var_menu_default_option\=.*/{s//    _var_menu_default_option=\"$_var_menu_default_option\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     [ -n "$_var_persistent_Joystick_Mode" ] && sed -i -e "/.*_var_persistent_Joystick_Mode\=.*/{s//    _var_persistent_Joystick_Mode=\"$_var_persistent_Joystick_Mode\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     [ -n "$_var_Golden_UI_easter_egg" ] && sed -i -e "/.*_var_Golden_UI_easter_egg\=.*/{s//    _var_Golden_UI_easter_egg=\"$_var_Golden_UI_easter_egg\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
-    [ -n "$_var_menu_font_filename" ] && sed -i -e "/.*_var_menu_font_filename\=.*/{s//    _var_menu_font_filename=\"${array_of_fonts[_var_selected_index]}\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
+    [ -n "$_var_menu_font_name" ] && sed -i -e "/.*_var_menu_font_name\=.*/{s//    _var_menu_font_name=\"${array_of_fonts[_var_selected_index]}\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
     touch /tmp/donotruncapcom
     echo -e "\nChoko Hack updated.\n"
   else
