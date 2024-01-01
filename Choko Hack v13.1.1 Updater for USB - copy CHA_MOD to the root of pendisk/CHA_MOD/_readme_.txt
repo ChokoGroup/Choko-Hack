@@ -29,6 +29,7 @@ Some notes:
 ### What's new in v13.1.1
 
 - Fix: unusual pendisks without partition table could be mounted but would not be safely unmounted when rebooting/shutting down.
+- Fix: selected menu font not preserved after update.
 
 
 ### What's new in v13.1.0
