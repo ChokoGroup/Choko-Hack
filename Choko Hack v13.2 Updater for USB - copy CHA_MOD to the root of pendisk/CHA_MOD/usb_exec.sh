@@ -1,8 +1,8 @@
 #!/bin/sh
-# Choko Hack updater 13.2
+# Choko Hack updater 13.2.0
 
 _var_running_from_folder="$(dirname "$(readlink -f "$0")")"
-echo -e "Current Choko Hack version is \"$CHOKOVERSION\"\nThis script will install version 13.2\n"
+echo -e "Current Choko Hack version is \"$CHOKOVERSION\"\nThis script will install version 13.2.0\n"
 
 if [ -f "${_var_running_from_folder}/hackinstall.tar.gz" ]
 then

@@ -1,4 +1,4 @@
-# Choko-Hack v13.2
+# Choko-Hack v13.2.0
 ### Choko Hack for the Capcom Home Arcade
 
 
@@ -26,7 +26,7 @@ Some notes:
 <p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/choko_menu_help.png" style="width:60%"></p>
 
 
-### What's new in v13.2
+### What's new in v13.2.0
 
 - New option in Settings Menu (hold P1 Start + P2 Start while in USB countdown) to swap P1/P2 joysticks order when using USB Joystick Mode.
 
@@ -79,6 +79,7 @@ Read the file 'what_was_new.txt' to learn about what was new in past versions.
 - 'SSH and FTP servers' (un)installer
 - 'Choko Hack Uninstaller' (why? I don't really know...)
 - Source code for the input readers
+- More console fonts ( copy to /usr/share/consolefonts/ )
 
 
 ### Types of Mods
