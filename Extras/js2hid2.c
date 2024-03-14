@@ -1,19 +1,40 @@
+#include <string.h>
+#include <fcntl.h>
+#include <linux/input.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <sys/ioctl.h>
-#include <linux/input.h>
+#include <unistd.h>
 
-int main() {
+/*
+  With -s
+  will swap P1 and P2 joysticks in USB joystick mode
+*/
+
+
+int main(int argc, char **argv) {
+
 	int joy_fd0;
 	int joy_fd1;
-	if ( ( joy_fd0 = open( "/dev/input/event2" , O_RDONLY|O_NONBLOCK)) == -1 ) {
-		printf("Could not open /dev/input/event2\n");
+  char *joy_p1 = "/dev/input/event2";
+  char *joy_p2 = "/dev/input/event3";
+  if (argc > 1) {
+    if ( ! strcmp(argv[1], "-s")) {
+      joy_p1 = "/dev/input/event3";
+      joy_p2 = "/dev/input/event2";
+    }
+    else {
+      printf("\n%s reads input from both joysticks and send it to USB EXT port.\nUsage: %s [-s]\nWith \"-s\" will swap P1 and P2 joysticks.\n", argv[0], argv[0]);
+      return -1;
+    }
+  }
+  
+	if ((joy_fd0 = open( joy_p1 , O_RDONLY|O_NONBLOCK)) == -1) {
+		printf("Could not open %s\n", joy_p1);
 		return -1;
 	}
-	if ( ( joy_fd1 = open( "/dev/input/event3" , O_RDONLY|O_NONBLOCK)) == -1 ) {
-		printf("Could not open /dev/input/event3\n");
+	if ((joy_fd1 = open( joy_p2 , O_RDONLY|O_NONBLOCK)) == -1) {
+		printf("Could not open %s\n", joy_p2);
 		return -1;
 	}
 

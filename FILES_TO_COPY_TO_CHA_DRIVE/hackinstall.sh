@@ -1,5 +1,5 @@
 #!/bin/sh
-# Choko Hack installer 13.1.1
+# Choko Hack installer 13.2
 
 echo -e "\n\n\e[0;35m"
 echo "      ___           ___           ___           ___           ___      "

@@ -1,10 +1,10 @@
+#include <string.h>
 #include <fcntl.h>
-#include <unistd.h>
-#include <poll.h>
-#include <sys/ioctl.h>
 #include <linux/input.h>
-#include <cstring>
+#include <poll.h>
 #include <stdio.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 /*
   With -b option returns a string with 0's or 1's for each button;
