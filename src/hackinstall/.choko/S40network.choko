@@ -38,7 +38,7 @@ case "$1" in
       while date | grep -q "1970" && [ $_var_time_sync_tries -lt 4 ];
       do
         _var_time_sync_tries=$((_var_time_sync_tries + 1))
-        nistTime="$(/.choko/busybox wget -qS -T 10 http://example.com -O /dev/null 2>&1 | grep 'Date: ')"
+        nistTime="$(/.choko/busybox timeout 15 /.choko/busybox wget -qS http://example.com -O /dev/null 2>&1 | grep 'Date: ')"
         if [ -n "$nistTime" ]
         then
           dateString=$(echo $nistTime | cut -d' ' -f2-7)

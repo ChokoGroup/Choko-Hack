@@ -454,11 +454,12 @@ start() {
                   echo -e "\n\nConnecting Wi-Fi..."
                   /etc/init.d/S40network restart > /dev/null 2>&1
                   # Get latest release version from GitHub API, or from the title of the latest release page
-                  _var_release_version="$(/.choko/busybox wget -q -T 20 -o /dev/null -O - 'https://api.github.com/repos/ChokoGroup/Choko-Hack/releases/latest' | grep -m 1 '"tag_name"')"
+                  # (bundled busybox wget crashes with -T, so use timeout instead)
+                  _var_release_version="$(/.choko/busybox timeout 20 /.choko/busybox wget -q -o /dev/null -O - 'https://api.github.com/repos/ChokoGroup/Choko-Hack/releases/latest' | grep -m 1 '"tag_name"')"
                   _var_release_version="${_var_release_version#*\"tag_name\"*\"v}"; _var_release_version="${_var_release_version%%\"*}"
                   if [[ ! "$_var_release_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
                   then
-                    _var_release_version="$(/.choko/busybox wget -q -T 20 -o /dev/null -O - 'https://github.com/ChokoGroup/Choko-Hack/releases/latest' | grep -m 1 'Choko Hack v')"
+                    _var_release_version="$(/.choko/busybox timeout 20 /.choko/busybox wget -q -o /dev/null -O - 'https://github.com/ChokoGroup/Choko-Hack/releases/latest' | grep -m 1 'Choko Hack v')"
                     _var_release_version="${_var_release_version#*Choko Hack v}"; _var_release_version="${_var_release_version%%[^0-9.]*}"
                   fi
                   if [[ ! "$_var_release_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
@@ -501,7 +502,7 @@ start() {
                           if [ "$_var_selected_option" = "Yes" ]
                           then
                             echo -en "Downloading updater..."                    
-                            if /.choko/busybox wget -q -T 20 -o /dev/null -O "/tmp/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip" "https://github.com/ChokoGroup/Choko-Hack/releases/download/v${_var_release_version}/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip"
+                            if /.choko/busybox timeout 300 /.choko/busybox wget -q -o /dev/null -O "/tmp/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip" "https://github.com/ChokoGroup/Choko-Hack/releases/download/v${_var_release_version}/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip"
                             then
                               echo -e " OK"
                               if /.choko/busybox unzip -qo "/tmp/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip" -d /tmp
