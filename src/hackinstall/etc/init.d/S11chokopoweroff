@@ -1,0 +1,126 @@
+#!/bin/sh
+
+# /etc/init.d/S11chokopoweroff
+# Choko Hack v13.0.0
+
+killallmf() {
+  # Do no get killed before killing other proccesses
+  trap "" 1 2 3 6 15
+  while [ -f /tmp/CHAshutdownMSG.txt ]
+  do
+    sleep 1
+    echo -n "."
+  done > /dev/tty0 &
+  kill -15 -1
+  killall -q -3 capcom
+  _var_time_waiting=0   # Use kill -9 after some time
+  while [ "$(ps -o comm | grep -c -e capcom -e fbneo -e dropbear -e uFTP -e .sh -e S20usbcheck)" -gt 0 ]
+  do
+    if [ $_var_time_waiting -eq 5 ]
+    then
+      kill -2 -1
+      echo -en "\e[1;93m"
+    elif [ $_var_time_waiting -eq 10 ]
+    then
+      kill -3 -1
+      echo -en "\e[0;33m"
+    elif [ $_var_time_waiting -eq 15 ]
+    then
+      echo -en "\e[0;31m"
+    elif [ $_var_time_waiting -gt 20 ]
+    then
+      echo -en "\nSomething is wrong... killing everything now!"
+      /usr/sbin/poweroff; kill -9 -1
+    fi
+    sleep 1
+    kill -15 -1
+    _var_time_waiting=$((_var_time_waiting + 1))
+  done
+}
+
+safeumount() {
+  echo -en "\n\e[mWriting files in cache..."
+  sync
+  while [ -n "$(pidof sync)" ]
+  do
+    sleep 1
+  done
+  echo " Done."
+  if [ -e /dev/sda1 ] || [ -e /dev/sda ]
+  then
+    echo -en "\e[mUnmounting USB."
+    until [ $(grep -c /dev/sda /proc/mounts) -eq 0 ]
+    do
+      grep /dev/sda /proc/mounts | cut -f2 -d" " | sort -r | xargs umount
+      sleep 1
+    done
+    echo -ne "\n\e[0;32mUSB can be safely removed now."
+  fi
+}
+
+rebootnow() {
+  touch /tmp/donotruncapcom
+  echo '' > /tmp/CHAshutdownMSG.txt
+  killallmf
+  /usr/sbin/reboot
+}
+
+poweroffnow() {
+  touch /tmp/donotruncapcom
+  echo -n '\n\e[0;32mIt is safe to power off now.' > /tmp/CHAshutdownMSG.txt
+  killallmf
+  /usr/sbin/poweroff
+}
+
+start() {
+  # Disable if we are in USB Joystick Mode
+  if [ ! -f /opt/capcom/assets/controller.txt ]
+  then
+    {
+    echo -e "\n\e[1;30m[P1 Start] + [P1 D] + [P2 Start] + [P2 D] for a safe reboot\n[P1 Coin ] + [P1 D] + [P2 Coin ] + [P2 D] for a safe shutdown\e[m"
+    _var_pressed_buttons="0000000000000000"
+    while :
+    do
+      until [ "$_var_pressed_buttons" = "1000000110000001" ] || [ "$_var_pressed_buttons" = "1000001010000010" ]
+      do
+        sleep 2
+        _var_pressed_buttons=$(readjoysticks j1 j2 -b)
+      done
+      clear
+      if [ "$_var_pressed_buttons" = "1000000110000001" ]
+      then
+        echo -en "\e[mShutdown request detected!\nPlease wait."
+        poweroffnow
+      else
+        echo -en "\e[mReboot request detected!\nPlease wait."
+        rebootnow
+      fi
+      exit
+    done
+    } > /dev/tty0 &
+    #             ^Run in beackground
+    # ^This redirects text output to be visible on screen
+  fi
+}
+
+stop() {
+  safeumount
+  # Colored shutdown final message
+  _var_shutdown_msg="$(cat /tmp/CHAshutdownMSG.txt)"
+  rm /tmp/CHAshutdownMSG.txt
+  echo -ne "$_var_shutdown_msg"
+} > /dev/tty0
+# ^This redirects text output to be visible on screen
+
+case "$1" in
+  start|stop|rebootnow|poweroffnow)
+    "$1"
+  ;;
+  reload|restart)
+    echo "S11chokopoweroff: What am I supposed to do?"
+  ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|reload|rebootnow|poweroffnow}" > /dev/tty0
+    exit 1
+  ;;
+esac

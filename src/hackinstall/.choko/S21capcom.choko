@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# /etc/init.d/S21capcom
+# Choko Hack v13.0.0
+
+start() {
+  if [ ! -f /tmp/donotruncapcom ] && [ "$(pidof js2hid2 capcom; echo $?)" -gt 0 ]
+  then
+    echo "Starting retro gaming."
+    cd /opt/capcom
+
+    if [ -f /opt/capcom/capcom.new ]
+    then
+      mv /opt/capcom/capcom.new /opt/capcom/capcom
+    fi
+
+    if [ ! -f /opt/capcom/capcom ]
+    then
+      cp /opt/capcom/capcom.old /opt/capcom/capcom
+    fi
+
+    if [ -f /opt/capcom/updater.new ]
+    then
+      mv /opt/capcom/updater.new /opt/capcom/updater
+    fi
+
+    if [ ! -f /opt/capcom/updater ]
+    then
+      cp /opt/capcom/updater.old /opt/capcom/updater
+    fi
+
+    [ ! -x  /opt/capcom/capcom ] && [ -f  /opt/capcom/capcom ] && chmod -f 755 /opt/capcom/capcom
+    [ ! -x  /opt/capcom/updater ] && [ -f  /opt/capcom/updater ] && chmod -f 755 /opt/capcom/updater
+    [ ! -x  /opt/capcom/updater2 ] && [ -f  /opt/capcom/updater2 ] && chmod -f 755 /opt/capcom/updater2
+    start-stop-daemon --start --quiet --make-pidfile --pidfile /var/run/capcom.pid --background  --exec /opt/capcom/capcom
+  fi
+}
+
+stop() {
+  if [ -f /var/run/capcom.pid ]
+  then
+    echo "Stopping retro gaming."
+    start-stop-daemon --stop --quiet --pidfile /var/run/capcom.pid
+  fi
+}
+
+restart() {
+  stop
+  sleep 1
+  start
+}
+
+case "$1" in
+  start|stop|restart)
+    "$1"
+  ;;
+  reload)
+    # Restart, since there is no true "reload" feature.
+    restart
+  ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|reload}" > /dev/tty0
+    exit 1
+  ;;
+esac

@@ -1,0 +1,94 @@
+#!/bin/sh
+#
+# Start the network....
+# Choko Hack v13.0.0
+
+# Debian ifupdown needs the /run/network lock directory
+mkdir -p /run/network
+
+case "$1" in
+  start)
+    if ! iw dev wlan0 link | grep -q "Connected to";
+    then
+      printf "Starting network: "
+      /sbin/ifup -a
+      [ $? = 0 ] && echo "OK" || echo "FAIL"
+    fi
+
+    if iw dev wlan0 link | grep -q "Connected to";
+    then
+      # Automatically Updates System Time According to the NIST Atomic Clock
+      while date | grep -q "1970";
+      do
+        nistTime="$(wget -qS http://example.com -O /dev/null 2>&1 | grep 'Date: ')"
+        if [ -n "$nistTime" ]
+        then
+          dateString=$(echo $nistTime | cut -d' ' -f2-7)
+          dayString=$(echo $nistTime | cut -d' ' -f2-2)
+          dateValue=$(echo $nistTime | cut -d' ' -f3-3)
+          monthValue=$(echo $nistTime | cut -d' ' -f4-4)
+          yearValue=$(echo $nistTime | cut -d' ' -f5-5)
+          timeValue=$(echo $nistTime | cut -d' ' -f6-6)
+          timeZoneValue=$(echo $nistTime | cut -d' ' -f7-7)
+          case $monthValue in
+            "Jan")
+                monthValue="01"
+                ;;
+            "Feb")
+                monthValue="02"
+                ;;
+            "Mar")
+                monthValue="03"
+                ;;
+            "Apr")
+                monthValue="04"
+                ;;
+            "May")
+                monthValue="05"
+                ;;
+            "Jun")
+                monthValue="06"
+                ;;
+            "Jul")
+                monthValue="07"
+                ;;
+            "Aug")
+                monthValue="08"
+                ;;
+            "Sep")
+                monthValue="09"
+                ;;
+            "Oct")
+                monthValue="10"
+                ;;
+            "Nov")
+                monthValue="11"
+                ;;
+            "Dec")
+                monthValue="12"
+                ;;
+            *)
+                continue
+          esac
+          date --utc --set "$yearValue-$monthValue-$dateValue $timeValue" > /dev/null
+        else
+          sleep 15
+        fi
+      done
+    fi
+	;;
+  stop)
+    printf "Stopping network: "
+    /sbin/ifdown -a
+    [ $? = 0 ] && echo "OK" || echo "FAIL"
+  ;;
+  restart|reload)
+    "$0" stop
+    "$0" start
+	;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+
+exit $?
