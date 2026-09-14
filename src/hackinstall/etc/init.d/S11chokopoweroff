@@ -1,9 +1,10 @@
 #!/bin/sh
 
 # /etc/init.d/S11chokopoweroff
-# Choko Hack v13.0.0
+# Choko Hack v13.3.0
 
 killallmf() {
+  # $1 is reboot or poweroff, used if processes refuse to die
   # Do no get killed before killing other proccesses
   trap "" 1 2 3 6 15
   while [ -f /tmp/CHAshutdownMSG.txt ]
@@ -14,7 +15,7 @@ killallmf() {
   kill -15 -1
   killall -q -3 capcom
   _var_time_waiting=0   # Use kill -9 after some time
-  while [ "$(ps -o comm | grep -c -e capcom -e fbneo -e dropbear -e uFTP -e .sh -e S20usbcheck)" -gt 0 ]
+  while [ "$(ps -o comm | grep -c -e capcom -e fbneo -e dropbear -e uFTP -e '\.sh$' -e S20usbcheck)" -gt 0 ]
   do
     if [ $_var_time_waiting -eq 5 ]
     then
@@ -30,7 +31,7 @@ killallmf() {
     elif [ $_var_time_waiting -gt 20 ]
     then
       echo -en "\nSomething is wrong... killing everything now!"
-      /usr/sbin/poweroff; kill -9 -1
+      /usr/sbin/"$1"; kill -9 -1
     fi
     sleep 1
     kill -15 -1
@@ -49,32 +50,59 @@ safeumount() {
   if [ -e /dev/sda1 ] || [ -e /dev/sda ]
   then
     echo -en "\e[mUnmounting USB."
+    _var_time_waiting=0
     until [ $(grep -c /dev/sda /proc/mounts) -eq 0 ]
     do
-      grep /dev/sda /proc/mounts | cut -f2 -d" " | sort -r | xargs umount
+      if [ $_var_time_waiting -lt 10 ]
+      then
+        grep /dev/sda /proc/mounts | cut -f2 -d" " | sort -r | xargs umount
+      elif [ $_var_time_waiting -lt 20 ]
+      then
+        # USB drive is not responding, detach it anyway
+        grep /dev/sda /proc/mounts | cut -f2 -d" " | sort -r | xargs umount -l
+      else
+        break
+      fi
       sleep 1
+      _var_time_waiting=$((_var_time_waiting + 1))
     done
-    echo -ne "\n\e[0;32mUSB can be safely removed now."
+    if [ $(grep -c /dev/sda /proc/mounts) -gt 0 ]
+    then
+      echo -ne "\n\e[0;31mCould not unmount USB!"
+    elif [ $_var_time_waiting -gt 10 ]
+    then
+      echo -ne "\n\e[0;33mUSB was not responding, it may need to be checked."
+    else
+      echo -ne "\n\e[0;32mUSB can be safely removed now."
+    fi
   fi
 }
 
 rebootnow() {
   touch /tmp/donotruncapcom
   echo '' > /tmp/CHAshutdownMSG.txt
-  killallmf
+  killallmf reboot
   /usr/sbin/reboot
 }
 
 poweroffnow() {
   touch /tmp/donotruncapcom
   echo -n '\n\e[0;32mIt is safe to power off now.' > /tmp/CHAshutdownMSG.txt
-  killallmf
+  killallmf poweroff
   /usr/sbin/poweroff
 }
 
+# PID of the background process reading the safe reboot/shutdown button combos
+_var_listener_pid_file=/tmp/S11chokopoweroff.pid
+
+# Return true if the button combos listener is running
+listenerrunning() {
+  [ -f "$_var_listener_pid_file" ] && grep -q S11chokopoweroff "/proc/$(cat "$_var_listener_pid_file")/cmdline" 2> /dev/null
+}
+
 start() {
-  # Disable if we are in USB Joystick Mode
-  if [ ! -f /opt/capcom/assets/controller.txt ]
+  # Disable if we are in USB Joystick Mode, and don't start it twice
+  if [ ! -f /opt/capcom/assets/controller.txt ] && ! listenerrunning
   then
     {
     echo -e "\n\e[1;30m[P1 Start] + [P1 D] + [P2 Start] + [P2 D] for a safe reboot\n[P1 Coin ] + [P1 D] + [P2 Coin ] + [P2 D] for a safe shutdown\e[m"
@@ -100,7 +128,14 @@ start() {
     } > /dev/tty0 &
     #             ^Run in beackground
     # ^This redirects text output to be visible on screen
+    echo $! > "$_var_listener_pid_file"
   fi
+}
+
+# Stop reading the button combos (when starting USB Joystick Mode the buttons are for the PC)
+stoplistener() {
+  listenerrunning && kill "$(cat "$_var_listener_pid_file")"
+  rm -f "$_var_listener_pid_file"
 }
 
 stop() {
@@ -113,14 +148,14 @@ stop() {
 # ^This redirects text output to be visible on screen
 
 case "$1" in
-  start|stop|rebootnow|poweroffnow)
+  start|stop|rebootnow|poweroffnow|stoplistener)
     "$1"
   ;;
   reload|restart)
     echo "S11chokopoweroff: What am I supposed to do?"
   ;;
   *)
-    echo "Usage: $0 {start|stop|restart|reload|rebootnow|poweroffnow}" > /dev/tty0
+    echo "Usage: $0 {start|stop|restart|reload|rebootnow|poweroffnow|stoplistener}" > /dev/tty0
     exit 1
   ;;
 esac

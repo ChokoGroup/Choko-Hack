@@ -1,7 +1,11 @@
 #!/bin/sh
 
 # /etc/init.d/S20joystick
-# Choko Hack v13.2.0
+# Choko Hack v13.3.0
+
+# The same DTB is used for USB drives and USB Joystick Mode: the USB port is switched between host and device mode
+_var_musb_mode_file="$(ls -d /sys/devices/platform/soc/1c19000.usb/musb-hdrc.*.auto/mode 2> /dev/null | head -n 1)"
+_var_gadget_folder=/sys/kernel/config/usb_gadget/capcom_home_arcade
 
 start() {
   if [ -f "/opt/capcom/assets/controller.txt" ]
@@ -10,13 +14,16 @@ start() {
     killall -q js2hid2
     if [ ! -e /sys/kernel/config/usb_gadget/capcom_home_arcade/idProduct ]
     then
+      # Switch the USB port to device mode (applied when the joystick is bound to the USB controller below)
+      [ -n "$_var_musb_mode_file" ] && echo peripheral > "$_var_musb_mode_file" 2> /dev/null
+
       # https://github.com/milador/RaspberryPi-Joystick/blob/master/8_Buttons_Joystick/8_buttons_joystick_usb
       # Load modules
       modprobe configfs
       modprobe libcomposite
       modprobe usb_f_hid
 
-      mount -t configfs none /sys/kernel/config/
+      grep -q ' /sys/kernel/config ' /proc/mounts || mount -t configfs none /sys/kernel/config/
 
       sleep 1
 
@@ -81,11 +88,26 @@ start() {
 # ^This redirects text output to be visible on screen
 
 stop() {
-  if [ -f "/opt/capcom/assets/controller.txt" ]
+  killall -q js2hid2
+  cd /
+  if [ -e "$_var_gadget_folder" ]
   then
-    killall -q js2hid2
-    cd /
-    [ -e /sys/kernel/config/usb_gadget/capcom_home_arcade ] && rm -rf /sys/kernel/config/usb_gadget/capcom_home_arcade
+    # Switch the USB port back to host mode while the joystick is still bound, otherwise the change stays pending
+    if [ -n "$_var_musb_mode_file" ] && echo host > "$_var_musb_mode_file" 2> /dev/null
+    then
+      # Wait (up to 5 seconds) until the USB PHY reports host mode
+      _var_time_waiting=0
+      while [ $_var_time_waiting -lt 5 ] && ! grep -q 'USB-HOST=1' /sys/class/extcon/extcon*/state 2> /dev/null
+      do
+        sleep 1
+        _var_time_waiting=$((_var_time_waiting + 1))
+      done
+    fi
+    # Remove the joystick (configfs needs this order)
+    echo "" > "$_var_gadget_folder/UDC" 2> /dev/null
+    rm -f "$_var_gadget_folder/configs/c.1/hid.usb0" "$_var_gadget_folder/configs/c.1/hid.usb1"
+    rmdir "$_var_gadget_folder/configs/c.1/strings/0x409" "$_var_gadget_folder/configs/c.1" "$_var_gadget_folder/functions/hid.usb0" \
+      "$_var_gadget_folder/functions/hid.usb1" "$_var_gadget_folder/strings/0x409" "$_var_gadget_folder" 2> /dev/null
   fi
 }
 

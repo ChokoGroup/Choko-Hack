@@ -2,24 +2,44 @@
 # Downloaded from https://github.com/robxu9/bash-static/releases/latest
 
 # /etc/init.d/S20usbcheck
-# Choko Hack v13.2.0
+# Choko Hack v13.3.0
 
 # We use a simple string compare, since until 10.0.0 CHOKOVERSION wasn't set
 # Future versions need to keep this in mind
-export CHOKOVERSION="13.2.0"
+export CHOKOVERSION="13.3.0"
 _var_menu_choko_ver=" Choko Hack v${CHOKOVERSION%'.0'}"; _var_menu_choko_ver="${_var_menu_choko_ver%'.0'} "
 _var_wanted_screen_resolution="auto"
 
 # Add (before v1.7) or fix (v1.7+) /boot entry in /etc/fstab
 # Hack to avoid official firmware update writing in eMMC when we are booting from SD card
 fixfstab() {
-  _var_boot_partition="$(cat /proc/cmdline)"; _var_boot_partition="${_var_boot_partition#*'root='}"; _var_boot_partition="${_var_boot_partition%'p2 '*}p1"
-  _var_boot_partition_in_fstab="$(grep -s -m 1 /boot /etc/fstab)"; _var_boot_partition_in_fstab="${_var_boot_partition_in_fstab%%$'\t'*}"
+  # Boot partition is the first partition of the device with the root partition (root=/dev/mmcblkXp2)
+  _var_boot_partition=""
+  read -r -a _array_kernel_parameters < /proc/cmdline
+  for _var_kernel_parameter in "${_array_kernel_parameters[@]}"
+  do
+    case "$_var_kernel_parameter" in
+      root=*p2)
+        _var_boot_partition="${_var_kernel_parameter#root=}"; _var_boot_partition="${_var_boot_partition%p2}p1"
+      ;;
+    esac
+  done
+  [ -z "$_var_boot_partition" ] && return
+  # Device in /boot entry (fields can be separated by tabs or spaces)
+  _var_boot_partition_in_fstab=""
+  while read -r _var_fstab_device _var_fstab_mount_point _var_fstab_other_fields
+  do
+    if [ "$_var_fstab_mount_point" = "/boot" ] && [ "${_var_fstab_device:0:1}" != "#" ]
+    then
+      _var_boot_partition_in_fstab="$_var_fstab_device"
+      break
+    fi
+  done < /etc/fstab
   if [ -n "$_var_boot_partition_in_fstab" ]
   then
     if [ "$_var_boot_partition" != "$_var_boot_partition_in_fstab" ]
     then
-      sed -i "s~${_var_boot_partition_in_fstab}~${_var_boot_partition}~" /etc/fstab
+      sed -i "s~^\([[:space:]]*\)${_var_boot_partition_in_fstab}\([[:space:]][[:space:]]*/boot[[:space:]]\)~\1${_var_boot_partition}\2~" /etc/fstab
       sed -i '/^$/d' /etc/fstab
     fi
     umount /boot
@@ -29,6 +49,48 @@ fixfstab() {
     sed -i '/^$/d' /etc/fstab
     mount /boot
   fi
+}
+
+# Return true if /boot is mounted with write access, remounting it read-write if needed
+# (it can be read-only because of fstab options, or remounted read-only by the kernel after FAT errors)
+bootWritable() {
+  _var_boot_mount_options="$(awk '$2 == "/boot" { print $4; exit }' /proc/mounts)"
+  case ",$_var_boot_mount_options," in
+    ,,)
+      # Not mounted: don't write in the /boot folder of the root partition
+      return 1
+    ;;
+    *,ro,*)
+      mount -o remount,rw /boot 2> /dev/null
+      _var_boot_mount_options="$(awk '$2 == "/boot" { print $4; exit }' /proc/mounts)"
+    ;;
+  esac
+  case ",$_var_boot_mount_options," in
+    *,rw,*)
+      return 0
+    ;;
+  esac
+  return 1
+}
+
+# Get the id of a menu option, used to save and find the default menu option
+# Chars that could break this script when saved in it are replaced with underscore
+# Ids saved by older versions (only quotes and slash were replaced) are the same, if they have no other special chars
+getMenuOptionId() {
+  _var_menu_option_id="${1//[\"\'\/]/_}"
+  _var_menu_option_id="${_var_menu_option_id//[\`\$\\&]/_}"
+}
+
+# Return true if version $1 is older than version $2 (format X.Y.Z)
+isVersionOlder() {
+  _array_version_1=(${1//./ })
+  _array_version_2=(${2//./ })
+  for _var_version_index in 0 1 2
+  do
+    [ $((10#${_array_version_1[_var_version_index]:-0})) -lt $((10#${_array_version_2[_var_version_index]:-0})) ] && return 0
+    [ $((10#${_array_version_1[_var_version_index]:-0})) -gt $((10#${_array_version_2[_var_version_index]:-0})) ] && return 1
+  done
+  return 1
 }
 
 start() {
@@ -50,9 +112,16 @@ start() {
     /usr/bin/setfont "$_var_menu_font_name"
 
     # If there are any "tmp_dlfile" it means a firmware update may have failed
-    if [ -f /opt/capcom/tmp_dlfile ]
+    if [ -f /opt/capcom/tmp_dlfile ] && [ ! -f /opt/capcom/assets/manifest.txt.backup ]
     then
-      echo -e "\n\n\e[0;31mLooks like the last firmware update could not download/install all files!\e[m\nReinstalling the firmware update is highy recommended.\nYou may need to reinstall multiple times, depending on network conditions."
+      # Without the backup of the list of files to update, the update can't be reinstalled from here
+      echo -e "\n\n\e[0;31mLooks like the last firmware update could not download/install all files!\e[m\nIgnoring last firmware update problems.\nReinstall update if you find issues.\n"
+      rm /opt/capcom/tmp_dlfile
+      sleep 5
+      echo -ne "\e[1;1H\e[m\ec"
+    elif [ -f /opt/capcom/tmp_dlfile ]
+    then
+      echo -e "\n\n\e[0;31mLooks like the last firmware update could not download/install all files!\e[m\nReinstalling the firmware update is highly recommended.\nYou may need to reinstall multiple times, depending on network conditions."
       _var_keep_asking="Y"
       _var_selected_option="Yes"
       until [ "$_var_keep_asking" = "N" ]
@@ -78,7 +147,7 @@ start() {
               echo -ne "\e[1;1H\e[m\ec"
               exit
             else
-              echo -e "\n\nAre sure?\nThere can be serious issues if the update is not fully successful.\nPlease confirm your answer."
+              echo -e "\n\nAre you sure?\nThere can be serious issues if the update is not fully successful.\nPlease confirm your answer."
               _var_selected_option="Yes"
               until [ "$_var_keep_asking" = "N" ]
               do
@@ -120,10 +189,22 @@ start() {
     if [ -f /.choko/runafterupdate ]
     then
       echo -e "\n\nRestoring the files needed for Choko Hack..."
-      cp /.choko/CHA-1.6-sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
+      if bootWritable
+      then
+        # Keep the DTB used before installing Choko Hack (restored by the uninstaller)
+        [ -f /.choko/sun8i-h3-orangepi-pc.dtb.original ] || cp /boot/sun8i-h3-orangepi-pc.dtb /.choko/sun8i-h3-orangepi-pc.dtb.original
+        cp /.choko/sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
+        [ "$_var_wanted_screen_resolution" = "720p" ] && cp /.choko/720p.boot.scr /boot/boot.scr
+        sync
+      fi
+      if ! cmp -s /.choko/sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
+      then
+        # Not retried here (it would reboot forever), a DTB that doesn't allow USB drives is restored later at boot
+        echo -e "\e[0;31mCould not write the DTB in /boot!\e[m"
+        sleep 3
+      fi
       # Delete leftovers from official firmware updates
       find / -type f \( -iname "*.old" -or -iname "Thumbs.db" \) -exec rm {} +
-      [ "$_var_wanted_screen_resolution" = "720p" ] && cp /.choko/720p.boot.scr /boot/boot.scr
       [ -f /.choko/S21capcom.original ] || cp /etc/init.d/S21capcom /.choko/S21capcom.original
       cp /.choko/S21capcom.choko /etc/init.d/S21capcom
       # Disable SSH server present in v1.7 official firmware img file
@@ -142,6 +223,27 @@ start() {
       /etc/init.d/S11chokopoweroff rebootnow
       exit
     else
+
+      # The same DTB is used in Arcade Mode and USB Joystick Mode (S20joystick switches the USB port to device mode)
+      # If the CHA booted with a DTB where the USB port is only in device mode (like the one from firmware 1.7), USB drives and USB Joystick Mode don't work
+      if grep -q peripheral /proc/device-tree/soc/usb@1c19000/dr_mode 2> /dev/null && ! cmp -s /.choko/sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
+      then
+        echo -e "\n\nRestoring the DTB needed to access USB drives..."
+        if bootWritable
+        then
+          cp /.choko/sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
+          sync
+        fi
+        if cmp -s /.choko/sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
+        then
+          touch /tmp/donotruncapcom
+          echo -en "Rebooting now."
+          /etc/init.d/S11chokopoweroff rebootnow
+          exit
+        fi
+        echo -e "\e[0;31mCould not restore the DTB!\e[m"
+        sleep 3
+      fi
 
       # Function to show the Choko Menu
       updateChokoMenu () {
@@ -185,7 +287,6 @@ start() {
         done
 
         # Border space + bottom line
-        echo -ne 
         printf '%b%-*s%b' "\e[${_var_menu_left_column}G$BorderColor$VerticalBar" $((_var_lenght_of_menu_lists_names + fix_menu_width)) " " "$VerticalBar\n\e[${_var_menu_left_column}G$BottomLeftCorner"
         i=$((_var_lenght_of_menu_lists_names + fix_menu_width))
         while [ $((i--)) -gt 0 ]
@@ -195,25 +296,66 @@ start() {
         echo -e "$BottomRighCorner\e[m"
       }
 
-      echo -e "\e[;H\e[1;35m${_var_menu_choko_ver# }\e[m"
+      # Function to run a menu option, returns the exit code of the menu option
+      runMenuOption () {
+        _var_name_of_script_file="${_array_menu_lists_exec_paths[$1]#\"}"
+        _var_name_of_script_file="${_var_name_of_script_file%%\"*}"
+        # Capcom Games - Official List: leave Choko Menu and start the official games
+        [ -z "$_var_name_of_script_file" ] && return 0
+        # Convert Windows and Macintosh EOL to Linux EOL if needed
+        if [ -f "$_var_name_of_script_file" ] && grep -q $'\r' "$_var_name_of_script_file"
+        then
+          if [ "$(awk 'BEGIN{x=0}{if(NR>1){x=1;exit}}END{print x}' "$_var_name_of_script_file")" = "0" ]
+          then
+            # Macintosh CR style
+            sed -i 's/\r/\n/g' "$_var_name_of_script_file" 2> /dev/null
+            sync
+            sleep 1
+          elif grep -q $'\r$' "$_var_name_of_script_file"
+          then
+            # Windows CRLF style
+            sed -i $'s/\r$//' "$_var_name_of_script_file" 2> /dev/null
+            sync
+            sleep 1
+          fi
+        fi
+        _var_folder_to_go="${_var_name_of_script_file%/*}"
+        [ -d "$_var_folder_to_go" ] && cd "$_var_folder_to_go"
+        eval "${_array_menu_lists_exec_paths[$1]}"
+      }
+
+      # Function to show Choko Hack version and the button combos available while booting
+      showBootHelp () {
+        echo -e "\e[;H\e[1;35m${_var_menu_choko_ver# }\e[m"
+        if [ -f /opt/capcom/assets/controller.txt ]
+        then
+          echo -e "\n\e[1;30m[P1 Coin] + [P2 Coin] to exit USB Joystick Mode\e[m"
+        else
+          echo -e "\n\n\e[1;30m[P1 Start] + [P2 Start] to change settings\e[m"
+          [ -f /etc/init.d/S20joystick ] && echo -e "\e[1;30m[P1 Coin ] + [P2 Coin ] to start USB Joystick Mode\e[m"
+        fi
+      }
+
       # Booting with Choko Menu
-      if [ -f /opt/capcom/assets/controller.txt ]
-      then
-        echo -e "\n\e[1;30m[P1 Coin] + [P2 Coin] to exit USB Joystick Mode\e[m"
-      else
-        echo -e "\n\n\e[1;30m[P1 Start] + [P2 Start] to change settings\e[m"
-        [ -f /etc/init.d/S20joystick ] && echo -e "\e[1;30m[P1 Coin ] + [P2 Coin ] to reboot into USB Joystick Mode\e[m"
-      fi
+      showBootHelp
 
       # Start building menu and repeat if needed
       _var_exit_request_code=202
       _var_stop_countdown="$_var_stop_countdown_default"
+      _var_already_waited_for_USB="N"
+      _var_Golden_UI_already_set="N"
       while [ $_var_exit_request_code -eq 202 ]
       do
         _var_pressed_buttons=$(readjoysticks j1 j2 -b)
 
-        # Check if USB is available or wait for input
-        _var_countdown=$_var_wait_for_USB_countdown
+        # Check if USB is available or wait for input (only the first time, not when going back to Choko Menu)
+        if [ "$_var_already_waited_for_USB" = "N" ]
+        then
+          _var_countdown=$_var_wait_for_USB_countdown
+          _var_already_waited_for_USB="Y"
+        else
+          _var_countdown=0
+        fi
         until [ -b /dev/sda ] || [ $_var_countdown -eq 0 ] || [ "$_var_pressed_buttons" = "1000000010000000" ] || [ "$_var_pressed_buttons" = "0000001000000010" ] || { [ "$_var_pressed_buttons" = "0000000100000001" ] && [ -f /etc/init.d/S20joystick ]; }
         do
           if [ -f "/opt/capcom/assets/controller.txt" ]
@@ -227,41 +369,60 @@ start() {
         done
         echo -ne "\r\e[K"
 
-        # Reboot into (or exit) USB Joystick Mode
+        # Exit USB Joystick Mode and continue in Arcade Mode, no reboot needed (S20joystick switches the USB port back to host mode)
+        if [ "$_var_pressed_buttons" = "0000000100000001" ] && [ -f /etc/init.d/S20joystick ] && [ -f "/opt/capcom/assets/controller.txt" ]
+        then
+          echo -e "\nStarting Arcade Mode..."
+          rm /opt/capcom/assets/controller.txt
+          sync
+          /etc/init.d/S20joystick stop > /dev/null 2>&1
+          # Wait for buttons to be released, or USB Joystick Mode would start again
+          while [ "$(readjoysticks j1 j2 -b)" != "0000000000000000" ]
+          do
+            sleep 1
+          done
+          echo -ne "\e[1;1H\e[m\ec"
+          # Safe reboot and shutdown button combos are not started when booting in USB Joystick Mode (S11chokopoweroff never starts them twice)
+          /etc/init.d/S11chokopoweroff start
+          showBootHelp
+          # The USB drive is only detected after the USB port is back in host mode, wait for it again
+          _var_already_waited_for_USB="N"
+          continue
+        fi
+
+        # Start USB Joystick Mode now, no reboot needed (S20joystick switches the USB port to device mode)
         if [ "$_var_pressed_buttons" = "0000000100000001" ] && [ -f /etc/init.d/S20joystick ]
         then
-          if [ -f "/opt/capcom/assets/controller.txt" ]
+          touch /opt/capcom/assets/controller.txt
+          sync
+          # S11chokopoweroff was started before in Arcade Mode, but in USB Joystick Mode the buttons are for the PC
+          /etc/init.d/S11chokopoweroff stoplistener
+        fi
+
+        # USB Joystick Mode
+        if [ -f "/opt/capcom/assets/controller.txt" ]
+        then
+          # Make sure S20joystick exists and runs
+          if [ ! -e /sys/kernel/config/usb_gadget/capcom_home_arcade/idProduct ] || [ -z "$(pidof js2hid2)" ]
           then
-            echo -e "\nRebooting in Arcade Mode..."
-            cp /.choko/CHA-1.6-sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
+            if [ ! -x /etc/init.d/S20joystick ]
+            then
+              cp /.choko/S20joystick.choko /etc/init.d/S20joystick
+              chmod 755 /etc/init.d/S20joystick
+            fi
+            /etc/init.d/S20joystick restart > /dev/null 2>&1
+            sleep 2
+          fi
+          if [ "$_var_persistent_Joystick_Mode" != "Yes" ]
+          then
+            # USB Joystick Mode ends by unplugging the cable, so write the change now
             rm /opt/capcom/assets/controller.txt
-          else
-            touch /opt/capcom/assets/controller.txt
+            sync
           fi
-          sleep 1
-          _var_exit_request_code=200
+          touch /tmp/donotruncapcom
+          echo -e "\e[1;1H\e[m\ecUSB Joystick Mode ready and running!"
+          _var_exit_request_code=0
           continue
-        # Else check if we are in USB Joystick Mode
-        else
-          if [ -f "/opt/capcom/assets/controller.txt" ]
-          then
-            # Make sure S20joystick exists and runs
-            if [ ! -e /sys/kernel/config/usb_gadget/capcom_home_arcade/idProduct ] || [ -z "$(pidof js2hid2)" ]
-            then
-              [ -x /etc/init.d/S20joystick ] || cp /.choko/S20joystick.choko /etc/init.d/S20joystick
-              /etc/init.d/S20joystick restart > /dev/null 2>&1
-              sleep 2
-            fi
-            if [ "$_var_persistent_Joystick_Mode" != "Yes" ]
-            then
-              cp /.choko/CHA-1.6-sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
-              rm /opt/capcom/assets/controller.txt
-            fi
-            touch /tmp/donotruncapcom
-            echo -e "\e[1;1H\e[m\ecUSB Joystick Mode ready and running!"
-            _var_exit_request_code=0
-            continue
-          fi
         fi
 
         # Change default settings
@@ -292,17 +453,29 @@ start() {
                   _var_keep_asking="Y"
                   echo -e "\n\nConnecting Wi-Fi..."
                   /etc/init.d/S40network restart > /dev/null 2>&1
-                  _var_release_version="$(/.choko/busybox wget -q -o /dev/null -O - 'https://github.com/ChokoGroup/Choko-Hack/releases/latest' | grep -m 1 'Choko Hack v')"
-                  _var_release_version="${_var_release_version#*Choko Hack v}"; _var_release_version="${_var_release_version:0:6}"
-                  if [ -z "$_var_release_version" ]
+                  # Get latest release version from GitHub API, or from the title of the latest release page
+                  _var_release_version="$(/.choko/busybox wget -q -T 20 -o /dev/null -O - 'https://api.github.com/repos/ChokoGroup/Choko-Hack/releases/latest' | grep -m 1 '"tag_name"')"
+                  _var_release_version="${_var_release_version#*\"tag_name\"*\"v}"; _var_release_version="${_var_release_version%%\"*}"
+                  if [[ ! "$_var_release_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+                  then
+                    _var_release_version="$(/.choko/busybox wget -q -T 20 -o /dev/null -O - 'https://github.com/ChokoGroup/Choko-Hack/releases/latest' | grep -m 1 'Choko Hack v')"
+                    _var_release_version="${_var_release_version#*Choko Hack v}"; _var_release_version="${_var_release_version%%[^0-9.]*}"
+                  fi
+                  if [[ ! "$_var_release_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
                   then
                     echo "Could not get latest release version!"
-                  elif [ "$_var_release_version" \< "$CHOKOVERSION" ]
+                  elif isVersionOlder "$_var_release_version" "$CHOKOVERSION"
                   then
                     echo -e "You have Choko Hack version $CHOKOVERSION but the latest version is ${_var_release_version}!?"
                   else
                     echo "Current Choko Hack version is $CHOKOVERSION"
                     echo -e "Latest release version is $_var_release_version"
+                    if [ "$_var_release_version" = "$CHOKOVERSION" ]
+                    then
+                      _var_update_question="Reinstall Choko Hack?"
+                    else
+                      _var_update_question="Update Choko Hack?"
+                    fi
                     # Wait for buttons to be released
                     while [ "$(readjoysticks j1 j2 -b)" != "0000000000000000" ]
                     do
@@ -312,7 +485,7 @@ start() {
                     _var_selected_option="No"
                     until [ "$_var_keep_asking" = "N" ]
                     do
-                      echo -ne "\rUpdate Choko Hack? \e[1;93m$_var_selected_option   \e[1;30m(use joystick to change) \e[m"
+                      echo -ne "\r$_var_update_question \e[1;93m$_var_selected_option   \e[1;30m(use joystick to change) \e[m"
                       case "$(readjoysticks j1)" in
                         U|D|R|L)
                           if [ "$_var_selected_option" = "No" ]
@@ -324,30 +497,36 @@ start() {
                         ;;
                         0|1|2|3|4|5|6|7)
                           _var_keep_asking="N"
-                          echo -e "\rUpdate Choko Hack? \e[1;93m$_var_selected_option                            \e[m"
+                          echo -e "\r$_var_update_question \e[1;93m$_var_selected_option                            \e[m"
                           if [ "$_var_selected_option" = "Yes" ]
                           then
                             echo -en "Downloading updater..."                    
-                            if /.choko/busybox wget -q -o /dev/null -O "/tmp/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip" "https://github.com/ChokoGroup/Choko-Hack/releases/download/v${_var_release_version}/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip"
+                            if /.choko/busybox wget -q -T 20 -o /dev/null -O "/tmp/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip" "https://github.com/ChokoGroup/Choko-Hack/releases/download/v${_var_release_version}/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip"
                             then
                               echo -e " OK"
-                              if unzip -qo "/tmp/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip" -d /tmp
+                              if /.choko/busybox unzip -qo "/tmp/Choko.Hack.v${_var_release_version}.Updater.for.USB.-.copy.CHA_MOD.to.the.root.of.pendisk.zip" -d /tmp
                               then
                                 echo -e "\nRunning Choko Hack updater..."
                                 cd /tmp/CHA_MOD
                                 sh /tmp/CHA_MOD/usb_exec.sh
+                                _var_updater_exit_code=$?
+                                cd /
                                 echo -ne "\n"
-                                touch /tmp/donotruncapcom
-                                _var_exit_request_code=200
-                                continue 3
+                                # After installing, the updater asks for reboot (200) or shutdown (201)
+                                if [ $_var_updater_exit_code -eq 200 ] || [ $_var_updater_exit_code -eq 201 ]
+                                then
+                                  touch /tmp/donotruncapcom
+                                  _var_exit_request_code=200
+                                  continue 3
+                                fi
+                                echo -e "\e[1;31mChoko Hack updater failed!\e[m"
                               else
                                 echo -e "\e[1;31m Error extracting Choko Hack updater!\e[m"
-                                rm -rf /tmp/Choko.Hack.*
                               fi
                             else
                               echo -e "\n\e[1;31mError downloading Choko Hack updater!\e[m"
-                              rm -rf /tmp/Choko.Hack.*
                             fi
+                            rm -rf /tmp/Choko.Hack.* /tmp/CHA_MOD
                           fi
                         ;;
                       esac
@@ -585,37 +764,48 @@ start() {
           echo -e "\nSettings saved.\n"
           if [ "$_var_selected_option" != "$_var_wanted_screen_resolution" ]
           then
-            if [ "$_var_selected_option" = "720p" ]
+            if bootWritable
             then
-              cp /.choko/720p.boot.scr /boot/boot.scr
+              if [ "$_var_selected_option" = "720p" ]
+              then
+                cp /.choko/720p.boot.scr /boot/boot.scr
+              else
+                cp /.choko/original.boot.scr /boot/boot.scr
+              fi
+              sync
+              sed -i -e "/.*_var_wanted_screen_resolution\=.*/{s//_var_wanted_screen_resolution=\"$_var_selected_option\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
+              echo -ne "\n"
+              _var_exit_request_code=200
             else
-              cp /.choko/original.boot.scr /boot/boot.scr
+              echo -e "\e[0;31mCould not write in /boot, screen resolution was not changed!\e[m"
             fi
-            sed -i -e "/.*_var_wanted_screen_resolution\=.*/{s//_var_wanted_screen_resolution=\"$_var_selected_option\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
-            echo -ne "\n"
-            _var_exit_request_code=200
           fi
           sleep 3
           continue
         fi
 
-        export LUCKY="0"
-        if [ -f /opt/capcom/assets/gold/bg.png ]
+        # Golden UI is chosen only once, not every time we go back to Choko Menu
+        if [ "$_var_Golden_UI_already_set" = "N" ]
         then
-          if [ "$_var_Golden_UI_easter_egg" = "random" ]
+          _var_Golden_UI_already_set="Y"
+          export LUCKY="0"
+          if [ -f /opt/capcom/assets/gold/bg.png ]
           then
-            export LUCKY=$((RANDOM % 50))   # 1/50 chance of getting Golden UI
-          elif [ "$_var_Golden_UI_easter_egg" = "always" ]
-          then
-            export LUCKY="10"
-          fi
-          if [ "$LUCKY" = "10" ]
-          then
-            mount --bind /.choko/Choko_golden_BARS_bottom.png /opt/capcom/assets/gold/BARS_bottom.png
-            for _var_file_to_mount in /opt/capcom/assets/gold/*.png
-            do
-              mount --bind "$_var_file_to_mount" "${_var_file_to_mount/\/gold/}"
-            done
+            if [ "$_var_Golden_UI_easter_egg" = "random" ]
+            then
+              export LUCKY=$((RANDOM % 50))   # 1/50 chance of getting Golden UI
+            elif [ "$_var_Golden_UI_easter_egg" = "always" ]
+            then
+              export LUCKY="10"
+            fi
+            if [ "$LUCKY" = "10" ]
+            then
+              mount --bind /.choko/Choko_golden_BARS_bottom.png /opt/capcom/assets/gold/BARS_bottom.png
+              for _var_file_to_mount in /opt/capcom/assets/gold/*.png
+              do
+                mount --bind "$_var_file_to_mount" "${_var_file_to_mount/\/gold/}"
+              done
+            fi
           fi
         fi
 
@@ -631,79 +821,74 @@ start() {
         OIFS="$IFS"
         IFS=$'\n'         # Make 'for' loops use entire lines
 
+        # Mount USB, if not mounted yet
+        if [ -b /dev/sda ] && ! grep -q ' /mnt ' /proc/mounts
+        then
+          # The kernel creates /dev/sda before reading the partition table, give it some time to create /dev/sda1
+          ls /dev/sda[1-9]* > /dev/null 2>&1 || sleep 1
+          # Use the first partition with usb_exec.sh scripts (or the whole disk, if it has no partition table)
+          for _var_USB_device in /dev/sda[1-9]* /dev/sda
+          do
+            if [ -b "$_var_USB_device" ] && mount -o noatime "$_var_USB_device" /mnt 2> /dev/null
+            then
+              sleep 1
+              [ -n "$(find /mnt -mindepth 2 -maxdepth 2 -iname 'usb_exec.sh' -type f -print 2> /dev/null | head -n 1)" ] && break
+              umount /mnt
+            fi
+          done
+        fi
+
+        # Do not expand '*', '?' and '[' found in names of folders and files
+        set -f
+
         # Get options from USB to display in menu
         if [ -b /dev/sda ]
         then
-          [ $(grep -c /dev/sda1 /proc/mounts) -eq 0 ] && mount /dev/sda1 /mnt && sleep 1
-          [ $(grep -c /dev/sda /proc/mounts) -eq 0 ] && mount /dev/sda /mnt && sleep 1
           # Look for usb_exec.sh
-          if [ "$(find /mnt -mindepth 2 -maxdepth 2 -iname 'usb_exec.sh' -type f -print 2> /dev/null | wc -l)" -gt 0 ]
-          then
-            for _var_folder_with_usb_exec_script in $(find /mnt -mindepth 2 -maxdepth 2 -iname 'usb_exec.sh' -type f -print 2> /dev/null | sort -f)
+          for _var_folder_with_usb_exec_script in $(find /mnt -mindepth 2 -maxdepth 2 -iname 'usb_exec.sh' -type f -print 2> /dev/null | sort -f)
+          do
+            _var_folder_only_has_usb_exec_script="Y"
+            _var_folder_with_usb_exec_script=${_var_folder_with_usb_exec_script%/usb_exec.sh}
+            # Look for roms/* folders with *.zip
+            for _var_folder_with_ROMs in $(find "${_var_folder_with_usb_exec_script}/roms" -mindepth 1 -maxdepth 1 -type d -print 2> /dev/null | sort -f)
             do
-              _var_folder_only_has_usb_exec_script="Y"
-              _var_folder_with_usb_exec_script=${_var_folder_with_usb_exec_script%/usb_exec.sh}
-              # Look for roms/* folders with *.zip
-              if [ "$(find "${_var_folder_with_usb_exec_script}/roms" -iname '*' -mindepth 1 -maxdepth 1 -type d -print 2> /dev/null | wc -l)" -gt 0 ]
+              if [ -n "$(find "$_var_folder_with_ROMs" -iname '*.zip' -type f -print 2> /dev/null | head -n 1)" ]
               then
-                for _var_folder_with_ROMs in $(find "${_var_folder_with_usb_exec_script}/roms" -iname '*' -mindepth 1 -maxdepth 1 -type d -print 2> /dev/null | sort -f)
-                do
-                  if [ "$(find "$_var_folder_with_ROMs" -iname '*.zip' -type f -print 2> /dev/null | wc -l)" -gt 0 ]
-                  then
-                    case "${_var_folder_with_ROMs##*/}" in
-                      # 'games??' logic from Choko Hack v11
-                      games[12][A-F])
-                        # Ignore, will look for 'games??.nfo' later
-                      ;;
-                      *)
-                        _var_folder_only_has_usb_exec_script="N"
-                        if [ ${#_array_menu_lists_names[@]} -lt $_var_max_menu_rows_number ]
-                        then
-                          # 'usb_exec.sh ROMS_FOLDER_NAME' logic from Choko Hack v12
-                          _var_folder_with_ROMs=${_var_folder_with_ROMs##*/}
-                          if [ $_var_screen_columns -lt $((fix_menu_width + ${#_var_folder_with_ROMs} + 8)) ]    # Count with "(USB) " added in menu listing + border
-                          then
-                            _array_menu_lists_names+=("$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "$_var_folder_with_ROMs")(...)")
-                          else
-                            _array_menu_lists_names+=("$_var_folder_with_ROMs")
-                          fi
-                          _array_menu_lists_exec_paths+=("\"${_var_folder_with_usb_exec_script}/usb_exec.sh\" \"$_var_folder_with_ROMs\"")
-                          # Add 6 for "(USB) "
-                          [ $((${#_array_menu_lists_names[-1]} + 6)) -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=$((${#_array_menu_lists_names[-1]} + 6))
-                          ((++_var_menu_USB_number_of_lines))
-                        fi
-                      ;;
-                    esac
-                  fi
-                done
-              fi
-
-              # Look for 'games??.nfo' from Choko Hack v11
-              if [ "$(find "$_var_folder_with_usb_exec_script" -maxdepth 1 -iname 'games??.nfo' -type f -print 2> /dev/null | wc -l)" -gt 0 ]
-              then
-                for _var_NFO_files_with_names in $(find "$_var_folder_with_usb_exec_script" -maxdepth 1 -iname 'games??.nfo' -type f -print 2> /dev/null)
-                do
-                  _var_folder_only_has_usb_exec_script="N"
-                  if [ ${#_array_menu_lists_names[@]} -lt $_var_max_menu_rows_number ]
-                  then
-                    _array_menu_lists_names+=("$(head -n 1 "$_var_NFO_files_with_names")")
-                    _array_menu_lists_exec_paths+=("\"${_var_NFO_files_with_names%nfo}sh\"")
-                    if [ $_var_screen_columns -lt $((fix_menu_width + ${#_array_menu_lists_names[-1]} + 8)) ]    # Count with "(USB) " added in menu listing + border
+                case "${_var_folder_with_ROMs##*/}" in
+                  # 'games??' logic from Choko Hack v11
+                  games[12][A-F])
+                    # Ignore, will look for 'games??.nfo' later
+                  ;;
+                  *)
+                    _var_folder_only_has_usb_exec_script="N"
+                    if [ ${#_array_menu_lists_names[@]} -lt $_var_max_menu_rows_number ]
                     then
-                      _array_menu_lists_names[-1]="$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "${_array_menu_lists_names[-1]}")(...)"
+                      # 'usb_exec.sh ROMS_FOLDER_NAME' logic from Choko Hack v12
+                      _var_folder_with_ROMs=${_var_folder_with_ROMs##*/}
+                      if [ $_var_screen_columns -lt $((fix_menu_width + ${#_var_folder_with_ROMs} + 8)) ]    # Count with "(USB) " added in menu listing + border
+                      then
+                        _array_menu_lists_names+=("$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "$_var_folder_with_ROMs")(...)")
+                      else
+                        _array_menu_lists_names+=("$_var_folder_with_ROMs")
+                      fi
+                      _array_menu_lists_exec_paths+=("\"${_var_folder_with_usb_exec_script}/usb_exec.sh\" \"$_var_folder_with_ROMs\"")
+                      # Add 6 for "(USB) "
+                      [ $((${#_array_menu_lists_names[-1]} + 6)) -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=$((${#_array_menu_lists_names[-1]} + 6))
+                      ((++_var_menu_USB_number_of_lines))
                     fi
-                    # Add 6 for "(USB) "
-                    [ $((${#_array_menu_lists_names[-1]} + 6)) -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=$((${#_array_menu_lists_names[-1]} + 6))
-                    ((++_var_menu_USB_number_of_lines))
-                  fi
-                done
+                  ;;
+                esac
               fi
+            done
 
-              # If only exists usb_exec.sh, use folder name as List Name
-              if [ "$_var_folder_only_has_usb_exec_script" = "Y" ] && [ ${#_array_menu_lists_names[@]} -lt $_var_max_menu_rows_number ]
+            # Look for 'games??.nfo' from Choko Hack v11
+            for _var_NFO_files_with_names in $(find "$_var_folder_with_usb_exec_script" -maxdepth 1 -iname 'games??.nfo' -type f -print 2> /dev/null)
+            do
+              _var_folder_only_has_usb_exec_script="N"
+              if [ ${#_array_menu_lists_names[@]} -lt $_var_max_menu_rows_number ]
               then
-                _array_menu_lists_names+=("${_var_folder_with_usb_exec_script#/mnt/}")
-                _array_menu_lists_exec_paths+=("\"${_var_folder_with_usb_exec_script}/usb_exec.sh\"")
+                _array_menu_lists_names+=("$(head -n 1 "$_var_NFO_files_with_names")")
+                _array_menu_lists_exec_paths+=("\"${_var_NFO_files_with_names%nfo}sh\"")
                 if [ $_var_screen_columns -lt $((fix_menu_width + ${#_array_menu_lists_names[-1]} + 8)) ]    # Count with "(USB) " added in menu listing + border
                 then
                   _array_menu_lists_names[-1]="$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "${_array_menu_lists_names[-1]}")(...)"
@@ -713,7 +898,21 @@ start() {
                 ((++_var_menu_USB_number_of_lines))
               fi
             done
-          fi
+
+            # If only exists usb_exec.sh, use folder name as List Name
+            if [ "$_var_folder_only_has_usb_exec_script" = "Y" ] && [ ${#_array_menu_lists_names[@]} -lt $_var_max_menu_rows_number ]
+            then
+              _array_menu_lists_names+=("${_var_folder_with_usb_exec_script#/mnt/}")
+              _array_menu_lists_exec_paths+=("\"${_var_folder_with_usb_exec_script}/usb_exec.sh\"")
+              if [ $_var_screen_columns -lt $((fix_menu_width + ${#_array_menu_lists_names[-1]} + 8)) ]    # Count with "(USB) " added in menu listing + border
+              then
+                _array_menu_lists_names[-1]="$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "${_array_menu_lists_names[-1]}")(...)"
+              fi
+              # Add 6 for "(USB) "
+              [ $((${#_array_menu_lists_names[-1]} + 6)) -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=$((${#_array_menu_lists_names[-1]} + 6))
+              ((++_var_menu_USB_number_of_lines))
+            fi
+          done
           [ ${#_array_menu_lists_names[@]} -eq 0 ] && umount /mnt 2>/dev/null
         fi
 
@@ -723,50 +922,44 @@ start() {
         [ "${#_array_menu_lists_names[-1]}" -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=${#_array_menu_lists_names[-1]}
 
         # Look for menu options in /.choko
-        if [ "$(find /usr/share/roms -iname '*' -mindepth 1 -maxdepth 1 -type d -print 2> /dev/null | wc -l)" -gt 0 ]
-        then
-          for _var_folder_with_ROMs in $(find /usr/share/roms -iname '*' -mindepth 1 -maxdepth 1 -type d -print 2> /dev/null | sort -f)
-          do
-            if [ "$(find "$_var_folder_with_ROMs" -iname '*.zip' -type f -print 2> /dev/null | wc -l)" -gt 0 ] && [ ${#_array_menu_lists_names[@]} -le $_var_max_menu_rows_number ]
-            then
-              case "${_var_folder_with_ROMs##*/}" in
-                # 'games??' logic from Choko Hack v11
-                games[12][A-F])
-                  # Ignore, will look for '/.choko/games??.nfo' later
-                ;;
-                *)
-                  # 'usb_exec.sh ROMS_FOLDER_NAME' logic from Choko Hack v12
-                  _var_folder_with_ROMs=${_var_folder_with_ROMs##*/}
-                  if [ $_var_screen_columns -lt $((fix_menu_width + ${#_var_folder_with_ROMs})) ]
-                  then
-                   _array_menu_lists_names+=("$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "$_var_folder_with_ROMs")(...)")
-                  else
-                    _array_menu_lists_names+=("$_var_folder_with_ROMs")
-                  fi
-                  _array_menu_lists_exec_paths+=("\"/.choko/usb_exec.sh\" \"$_var_folder_with_ROMs\"")
-                  [ "${#_array_menu_lists_names[-1]}" -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=${#_array_menu_lists_names[-1]}
-                ;;
-              esac
-            fi
-          done
-        fi
+        for _var_folder_with_ROMs in $(find /usr/share/roms -mindepth 1 -maxdepth 1 -type d -print 2> /dev/null | sort -f)
+        do
+          if [ ${#_array_menu_lists_names[@]} -le $_var_max_menu_rows_number ] && [ -n "$(find "$_var_folder_with_ROMs" -iname '*.zip' -type f -print 2> /dev/null | head -n 1)" ]
+          then
+            case "${_var_folder_with_ROMs##*/}" in
+              # 'games??' logic from Choko Hack v11
+              games[12][A-F])
+                # Ignore, will look for '/.choko/games??.nfo' later
+              ;;
+              *)
+                # 'usb_exec.sh ROMS_FOLDER_NAME' logic from Choko Hack v12
+                _var_folder_with_ROMs=${_var_folder_with_ROMs##*/}
+                if [ $_var_screen_columns -lt $((fix_menu_width + ${#_var_folder_with_ROMs})) ]
+                then
+                  _array_menu_lists_names+=("$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "$_var_folder_with_ROMs")(...)")
+                else
+                  _array_menu_lists_names+=("$_var_folder_with_ROMs")
+                fi
+                _array_menu_lists_exec_paths+=("\"/.choko/usb_exec.sh\" \"$_var_folder_with_ROMs\"")
+                [ "${#_array_menu_lists_names[-1]}" -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=${#_array_menu_lists_names[-1]}
+              ;;
+            esac
+          fi
+        done
         # Look for '/.choko/*.nfo'
-        if [ "$(find /.choko -maxdepth 1 -iname '*.nfo' -type f -print 2> /dev/null | wc -l)" -gt 0 ]
-        then
-          for _var_NFO_files_with_names in $(find /.choko -maxdepth 1 -iname '*.nfo' -type f -print 2> /dev/null | sort -f)
-          do
-            if [ ${#_array_menu_lists_names[@]} -le $_var_max_menu_rows_number ]
+        for _var_NFO_files_with_names in $(find /.choko -maxdepth 1 -iname '*.nfo' -type f -print 2> /dev/null | sort -f)
+        do
+          if [ ${#_array_menu_lists_names[@]} -le $_var_max_menu_rows_number ]
+          then
+            _array_menu_lists_names+=("$(head -n 1 "$_var_NFO_files_with_names")")
+            _array_menu_lists_exec_paths+=("\"${_var_NFO_files_with_names%nfo}sh\"")
+            if [ $_var_screen_columns -lt $((fix_menu_width + ${#_array_menu_lists_names[-1]})) ]
             then
-              _array_menu_lists_names+=("$(head -n 1 "$_var_NFO_files_with_names")")
-              _array_menu_lists_exec_paths+=("\"${_var_NFO_files_with_names%nfo}sh\"")
-              if [ $_var_screen_columns -lt $((fix_menu_width + ${#_array_menu_lists_names[-1]})) ]
-              then
-                _array_menu_lists_names[-1]="$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "${_array_menu_lists_names[-1]}")(...)"
-              fi
-              [ "${#_array_menu_lists_names[-1]}" -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=${#_array_menu_lists_names[-1]}
+              _array_menu_lists_names[-1]="$(printf '%.*s' $((_var_screen_columns - fix_menu_width - 13)) "${_array_menu_lists_names[-1]}")(...)"
             fi
-          done
-        fi
+            [ "${#_array_menu_lists_names[-1]}" -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=${#_array_menu_lists_names[-1]}
+          fi
+        done
 
         if [ ${#_array_menu_lists_names[@]} -gt $_var_max_menu_rows_number ]
         then
@@ -775,12 +968,14 @@ start() {
           [ "${#_array_menu_lists_names[-1]}" -gt "$_var_lenght_of_menu_lists_names" ] && _var_lenght_of_menu_lists_names=${#_array_menu_lists_names[-1]}
         fi
 
+        set +f
         IFS="$OIFS"
         i=0
-        # Replace problematic chars with underscore and compare with saved menu default option
+        # Compare ids of menu options with saved menu default option
         while [ $i -lt ${#_array_menu_lists_exec_paths[@]} ]
         do
-          [ "$_var_menu_default_option" = "${_array_menu_lists_exec_paths[$i]//[\"\'\/]/_}" ] && _var_selected_option=$i
+          getMenuOptionId "${_array_menu_lists_exec_paths[$i]}"
+          [ "$_var_menu_default_option" = "$_var_menu_option_id" ] && _var_selected_option=$i
           ((++i))
         done
 
@@ -790,33 +985,10 @@ start() {
           then
             # If there is only one option to run from USB (and official list), run it...
             touch /tmp/autorunUSBoff  # ... but only run once
-            echo "Automatically selected: ${_array_menu_lists_names[$_var_selected_option]}"
-            _var_name_of_script_file="${_array_menu_lists_exec_paths[0]#\"}"
-            _var_name_of_script_file="${_var_name_of_script_file%%\"*}"
-            # Convert Windows and Macintosh EOL to Linux EOL if needed
-            if [ -n "$_var_name_of_script_file" ] && [ -f "$_var_name_of_script_file" ]
-            then
-              if [ "$(awk 'BEGIN{x=0}{if(NR>1){x=1;exit}}END{print x}' "$_var_name_of_script_file")" = "0" ]
-              then
-                # Macintosh CR style
-                sed -i 's/\r/\n/g' "$_var_name_of_script_file" 2> /dev/null
-                sync
-                sleep 1
-              else
-                # Windows CFLF style
-                if grep -q $'\r$' "$_var_name_of_script_file";
-                then
-                  sed -i $'s/\r$//' "$_var_name_of_script_file" 2> /dev/null
-                  sync
-                  sleep 1
-                fi
-              fi
-            fi
-            _var_folder_to_go=${_array_menu_lists_exec_paths[0]%/*}
-            _var_folder_to_go=${_var_folder_to_go#\"}
-            cd "$_var_folder_to_go"
-            eval "${_array_menu_lists_exec_paths[0]}"
+            echo "Automatically selected: ${_array_menu_lists_names[0]}"
+            runMenuOption 0
             _var_exit_request_code=$?
+            cd /
           else
 
             TopLeftCorner='\e[12mI'
@@ -842,7 +1014,7 @@ start() {
             # Check screen size and display menu background for Choko Menu
             _var_screen_resolution=$(fbset | sed '2q;d'); _var_screen_resolution=${_var_screen_resolution#*'"'}; _var_screen_resolution=${_var_screen_resolution%'-'*}
             echo -ne "\e[1;1H\e[m\ec"
-            cat "/.choko/choko-${_var_screen_resolution}.rgba" > /dev/fb0
+            [ -f "/.choko/choko-${_var_screen_resolution}.rgba" ] && cat "/.choko/choko-${_var_screen_resolution}.rgba" > /dev/fb0
 
             # Start drawing the menu
             showChokoMenu
@@ -894,11 +1066,12 @@ start() {
                 6)
                   [ "$_var_stop_countdown" = "N" ] && _var_stop_countdown="Y" && echo -ne "\e[${_var_countdown_coord_Y};${_var_countdown_coord_X}H$CountdownColor$BorderColor\e[12m$HorizontalBar$HorizontalBar\e[m"
                   # P1 Start button: set default option
-                  # Replace problemtic chars with underscore and save menu default option
-                  _var_menu_default_option="${_array_menu_lists_exec_paths[$_var_selected_option]//[\"\'\/]/_}"
+                  # Save id of menu option (special chars replaced with underscore) as menu default option
+                  getMenuOptionId "${_array_menu_lists_exec_paths[$_var_selected_option]}"
+                  _var_menu_default_option="$_var_menu_option_id"
                   sed -i -e "/.*_var_menu_default_option\=.*/{s//    _var_menu_default_option=\"$_var_menu_default_option\"/;:a" -e '$!N;$!ba' -e '}' /etc/init.d/S20usbcheck
                   echo -ne "\e[1;1H\e[m\ec"
-                  echo -e "\e[1;93mSaved as default option:\e[m ${_array_menu_lists_names[$_var_selected_option]}\""
+                  echo -e "\e[1;93mSaved as default option:\e[m ${_array_menu_lists_names[$_var_selected_option]}"
                   sleep 2
                   continue 2
                 ;;
@@ -934,34 +1107,10 @@ start() {
             _var_stop_countdown="Y"
             # Put text cursor in top left corner of screen and clear the screen leaving Choko
             echo -ne "\e[1;1H\e[m\ec"
-            cat "/.choko/choko-${_var_screen_resolution}.rgba" > /dev/fb0
-            # Convert Windows and Macintosh EOL to Linux EOL if needed
-            _var_name_of_script_file="${_array_menu_lists_exec_paths[$_var_selected_option]#\"}"
-            _var_name_of_script_file="${_var_name_of_script_file%%\"*}"
-            if [ -n "$_var_name_of_script_file" ] && [ -f "$_var_name_of_script_file" ]
-            then
-              if [ "$(awk 'BEGIN{x=0}{if(NR>1){x=1;exit}}END{print x}' "$_var_name_of_script_file")" = "0" ]
-              then
-                # Macintosh CR style
-                sed -i 's/\r/\n/g' "$_var_name_of_script_file" 2> /dev/null
-                sync
-                sleep 1
-              else
-                # Windows CFLF style
-                if grep -q $'\r$' "$_var_name_of_script_file";
-                then
-                  sed -i $'s/\r$//' "$_var_name_of_script_file" 2> /dev/null
-                  sync
-                  sleep 1
-                fi
-              fi
-            fi
+            [ -f "/.choko/choko-${_var_screen_resolution}.rgba" ] && cat "/.choko/choko-${_var_screen_resolution}.rgba" > /dev/fb0
             # Load selected option
             echo "Selected: ${_array_menu_lists_names[$_var_selected_option]}"
-            _var_folder_to_go="${_array_menu_lists_exec_paths[$_var_selected_option]%/*}"
-            _var_folder_to_go="${_var_folder_to_go#\"}"
-            cd "$_var_folder_to_go"
-            eval "eval \"\${_array_menu_lists_exec_paths[$_var_selected_option]}\""
+            runMenuOption $_var_selected_option
             _var_exit_request_code=$?
             cd /
           fi
@@ -989,23 +1138,20 @@ start() {
 # ^This redirects text output to be visible on screen
 
 stop() {
-  if [ -f /opt/capcom/assets/controller.txt ]
+  if [ -f /opt/capcom/assets/manifest.txt ] || [ -f /.choko/runafterupdate ]
   then
-    echo -e "\e[1;1H\e[m\ecRebooting in USB Josytick Mode..."
-    # This is needed at reboot because of official firmware way to implement USB Joystick Mode.
-    cp /.choko/CHA-1.7-sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
-  else
-    if [ -f /opt/capcom/assets/manifest.txt ] || [ -f /.choko/runafterupdate ]
+    fixfstab
+    if bootWritable
     then
-      fixfstab
       # Make sure official firmware update does not stop us from loading scripts from USB
       if [ -f /etc/init.d/S20joystick ] || [ -f /opt/capcom/updater2 ]
       then
-        cp /.choko/CHA-1.6-sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
+        cp /.choko/sun8i-h3-orangepi-pc.dtb /boot/sun8i-h3-orangepi-pc.dtb
       fi
       [ "$_var_wanted_screen_resolution" = "720p" ] && cp /.choko/720p.boot.scr /boot/boot.scr
-      [ -f /opt/capcom/assets/manifest.txt ] && cp /opt/capcom/assets/manifest.txt /opt/capcom/assets/manifest.txt.backup
+      sync
     fi
+    [ -f /opt/capcom/assets/manifest.txt ] && cp /opt/capcom/assets/manifest.txt /opt/capcom/assets/manifest.txt.backup
   fi
 } > /dev/tty0
 # ^This redirects text output to be visible on screen
@@ -1015,7 +1161,7 @@ case "$1" in
     "$1"
   ;;
   reload|restart)
-    echo "S11chokopoweroff: What am I supposed to do?"
+    echo "S20usbcheck: What am I supposed to do?"
   ;;
   *)
     echo "Usage: $0 {start|stop|restart|reload}" > /dev/tty0

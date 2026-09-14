@@ -1,4 +1,4 @@
-INSTRUCTIONS for Choko Hack v13.1.1
+INSTRUCTIONS for Choko Hack v13.3.0
       ___           ___           ___           ___           ___     
      /\__\         /\  \         /\  \         /|  |         /\  \    
     /:/  /         \:\  \       /::\  \       |:|  |        /::\  \   

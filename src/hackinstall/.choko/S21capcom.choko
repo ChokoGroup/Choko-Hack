@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # /etc/init.d/S21capcom
-# Choko Hack v13.0.0
+# Choko Hack v13.3.0
 
 start() {
   if [ ! -f /tmp/donotruncapcom ] && [ "$(pidof js2hid2 capcom; echo $?)" -gt 0 ]

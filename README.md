@@ -1,4 +1,4 @@
-# Choko-Hack v13.2.0
+# Choko-Hack v13.3.0
 ### Choko Hack for the Capcom Home Arcade
 
 
@@ -24,6 +24,26 @@ Some notes:
 
 
 <p align="center"><img src="https://raw.githubusercontent.com/ChokoGroup/Choko-Hack/main/choko_menu_help.png" style="width:60%"></p>
+
+
+### What's new in v13.3.0
+
+- Fix: saving a default games list with some special characters in its folder name (like `&`, `` ` `` or `$`) could stop Choko Menu from loading. The updater resets a default option that was saved like that.
+- Fix: the online updater would not detect new versions like 13.10.0, and "Look for Choko Hack update" could wait forever when Wi-Fi is connected without internet access.
+- Fix: USB pendisk sometimes not detected at boot. Pendisks with the data in another partition (like macOS "GUID Partition Map" format) should also work now.
+- Fix: the question to reinstall a failed firmware update could be asked at every boot.
+- Fix: USB Joystick Mode could fail to start after restoring its script.
+- USB Joystick Mode starts and exits right away at boot, without rebooting, and no longer swaps the DTB file: the same DTB is used for USB drives and USB Joystick Mode, and the USB port is switched between host and device mode when needed. This also fixes the CHA booting again in USB Joystick Mode, or in Arcade Mode unable to access USB drives, when unplugged soon after using USB Joystick Mode. A CHA left with the old USB Joystick Mode DTB is fixed at boot (it reboots once).
+- Fix: "Start SSH server" (with the SSH server from firmware 1.7 image) stopped working after installing or updating Choko Hack.
+- Fix: writing to the boot partition (DTB, screen resolution) remounts it read-write first if needed, and shows an error if it can't be written.
+- Wi-Fi is no longer started in USB Joystick Mode.
+- Ethernet is disabled in the DTB installed by Choko Hack (the CHA has no Ethernet, only Wi-Fi), removing the related errors at boot and when starting the network.
+- Fix: the `/boot` line in `/etc/fstab` could be damaged if its fields were separated by spaces.
+- Fix: a safe reboot that took too long would turn off the CHA instead, and a safe shutdown could hang forever if the USB pendisk stops responding.
+- Going back to Choko Menu no longer repeats the USB countdown, and the Golden UI choice stays the same until next boot.
+- Faster search for games lists in USB and fewer writes to the pendisk (mounted with `noatime`, scripts are only rewritten when they have Windows/Macintosh line endings).
+- Uninstaller also removes `bash`, `setfont`, console fonts and the `reboot`/`poweroff` commands added by Choko Hack, restores the original network script, screen resolution and the DTB used before installing Choko Hack, and shuts down safely.
+- Note: the online updater downloads over HTTPS, but the CHA can't verify certificates. In untrusted networks, prefer the updater for USB.
 
 
 ### What's new in v13.2.0

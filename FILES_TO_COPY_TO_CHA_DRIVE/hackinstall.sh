@@ -1,5 +1,5 @@
 #!/bin/sh
-# Choko Hack installer 13.2.0
+# Choko Hack installer 13.3.0
 
 echo -e "\n\n\e[0;35m"
 echo "      ___           ___           ___           ___           ___      "
@@ -31,7 +31,7 @@ RESULT=$?
 if [ $RESULT -eq 0 ]
 then
   mkdir -p /mnt/boot
-  rm -f "/mnt/.choko/menu-1280x720.rgba" "/mnt/.choko/menu-1920x1080.rgba" "/mnt/.choko/games1S.sh" "/mnt/.choko/S19chokohelper.choko" "/mnt/etc/init.d/S19chokohelper"
+  rm -f "/mnt/.choko/menu-1280x720.rgba" "/mnt/.choko/menu-1920x1080.rgba" "/mnt/.choko/games1S.sh" "/mnt/.choko/S19chokohelper.choko" "/mnt/etc/init.d/S19chokohelper" "/mnt/.choko/CHA-1.6-sun8i-h3-orangepi-pc.dtb" "/mnt/.choko/CHA-1.7-sun8i-h3-orangepi-pc.dtb"
   rm -f "/mnt/.choko/Activate Choko Hack USB Loader"*
   rm -f "/mnt/.choko/Restore USB Joystick Mode"*
   [ -f "/mnt/etc/ssh/sshd_config" ] && sed -i "/PermitRootLogin/c\PermitRootLogin yes" /mnt/etc/ssh/sshd_config
@@ -63,6 +63,7 @@ then
   chmod -f 755 /mnt/.choko
   chmod -f 644 /mnt/.choko/*
   chmod -f 755 /mnt/.choko/*.sh
+  chmod -f 755 /mnt/.choko/*.original
   chmod -f 755 /mnt/.choko/busybox
   chmod -f 755 /mnt/.choko/S20joystick.choko
   chmod -f 755 /mnt/.choko/S21capcom.choko

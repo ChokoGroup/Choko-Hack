@@ -1,26 +1,44 @@
 #!/bin/sh
 #
 # Start the network....
-# Choko Hack v13.0.0
+# Choko Hack v13.3.0
 
 # Debian ifupdown needs the /run/network lock directory
 mkdir -p /run/network
 
 case "$1" in
   start)
+    # No network in USB Joystick Mode (check js2hid2, S20usbcheck may have already deleted controller.txt)
+    if [ -n "$(pidof js2hid2)" ]
+    then
+      echo "USB Joystick Mode: network not started"
+      exit 0
+    fi
+
     if ! iw dev wlan0 link | grep -q "Connected to";
     then
       printf "Starting network: "
-      /sbin/ifup -a
-      [ $? = 0 ] && echo "OK" || echo "FAIL"
+      # Only bring up interfaces that exist: the CHA has no Ethernet, and ifup waits 15 seconds for a missing eth0
+      _var_ifup_result=0
+      for _var_interface in $(sed -n 's/^auto[[:space:]][[:space:]]*//p' /etc/network/interfaces)
+      do
+        if [ -e "/sys/class/net/$_var_interface" ]
+        then
+          /sbin/ifup "$_var_interface" || _var_ifup_result=1
+        fi
+      done
+      [ $_var_ifup_result = 0 ] && echo "OK" || echo "FAIL"
     fi
 
     if iw dev wlan0 link | grep -q "Connected to";
     then
       # Automatically Updates System Time According to the NIST Atomic Clock
-      while date | grep -q "1970";
+      # Give up after some tries, Wi-Fi may be connected without internet access
+      _var_time_sync_tries=0
+      while date | grep -q "1970" && [ $_var_time_sync_tries -lt 4 ];
       do
-        nistTime="$(wget -qS http://example.com -O /dev/null 2>&1 | grep 'Date: ')"
+        _var_time_sync_tries=$((_var_time_sync_tries + 1))
+        nistTime="$(/.choko/busybox wget -qS -T 10 http://example.com -O /dev/null 2>&1 | grep 'Date: ')"
         if [ -n "$nistTime" ]
         then
           dateString=$(echo $nistTime | cut -d' ' -f2-7)
@@ -68,11 +86,12 @@ case "$1" in
                 monthValue="12"
                 ;;
             *)
+                sleep 5
                 continue
           esac
           date --utc --set "$yearValue-$monthValue-$dateValue $timeValue" > /dev/null
         else
-          sleep 15
+          sleep 5
         fi
       done
     fi

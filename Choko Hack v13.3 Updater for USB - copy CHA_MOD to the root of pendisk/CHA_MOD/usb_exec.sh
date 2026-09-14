@@ -1,8 +1,8 @@
 #!/bin/sh
-# Choko Hack updater 13.2.0
+# Choko Hack updater 13.3.0
 
 _var_running_from_folder="$(dirname "$(readlink -f "$0")")"
-echo -e "Current Choko Hack version is \"$CHOKOVERSION\"\nThis script will install version 13.2.0\n"
+echo -e "Current Choko Hack version is \"$CHOKOVERSION\"\nThis script will install version 13.3.0\n"
 
 if [ -f "${_var_running_from_folder}/hackinstall.tar.gz" ]
 then
@@ -10,7 +10,14 @@ then
   eval "$(grep -m 1 '_var_wait_for_USB_countdown=' /etc/init.d/S20usbcheck)"
   eval "$(grep -m 1 '_var_wait_in_menu_countdown=' /etc/init.d/S20usbcheck)"
   eval "$(grep -m 1 '_var_stop_countdown_default=' /etc/init.d/S20usbcheck)"
-  eval "$(grep -m 1 '_var_menu_default_option=' /etc/init.d/S20usbcheck)"
+  # Before v13.3.0, a default menu option with some special chars could break S20usbcheck, reset it if needed
+  _var_saved_menu_default_option="$(grep -m 1 '_var_menu_default_option=' /etc/init.d/S20usbcheck)"
+  if printf '%s\n' "$_var_saved_menu_default_option" | grep -q '^[[:space:]]*_var_menu_default_option="[^"`$\\&]*"[[:space:]]*$'
+  then
+    eval "$_var_saved_menu_default_option"
+  else
+    _var_menu_default_option="none"
+  fi
   eval "$(grep -m 1 '_var_persistent_Joystick_Mode=' /etc/init.d/S20usbcheck)"
   eval "$(grep -m 1 '_var_Golden_UI_easter_egg=' /etc/init.d/S20usbcheck)"
   eval "$(grep -m 1 '_var_menu_font_name=' /etc/init.d/S20usbcheck)"
@@ -20,7 +27,7 @@ then
   if [ $RESULT -eq 0 ]
   then
     mkdir -p /boot
-    rm -f "/.choko/menu-1280x720.rgba" "/.choko/menu-1920x1080.rgba" "/.choko/games1S.sh" "/.choko/S19chokohelper.choko" "/etc/init.d/S19chokohelper"
+    rm -f "/.choko/menu-1280x720.rgba" "/.choko/menu-1920x1080.rgba" "/.choko/games1S.sh" "/.choko/S19chokohelper.choko" "/etc/init.d/S19chokohelper" "/.choko/CHA-1.6-sun8i-h3-orangepi-pc.dtb" "/.choko/CHA-1.7-sun8i-h3-orangepi-pc.dtb"
     rm -f "/.choko/Activate Choko Hack USB Loader"*
     rm -f "/.choko/Restore USB Joystick Mode"*
     [ -f "/etc/ssh/sshd_config" ] && sed -i "/PermitRootLogin/c\PermitRootLogin yes" /etc/ssh/sshd_config
@@ -52,6 +59,7 @@ then
     chmod -f 755 /.choko
     chmod -f 644 /.choko/*
     chmod -f 755 /.choko/*.sh
+    chmod -f 755 /.choko/*.original
     chmod -f 755 /.choko/busybox
     chmod -f 755 /.choko/S20joystick.choko
     chmod -f 755 /.choko/S21capcom.choko
@@ -89,23 +97,35 @@ then
     echo -e "\nChoko Hack updated.\n"
   else
     echo -e "\n\e[0;31mThere was some error!\e[m"
+    _var_update_failed="Y"
   fi
 else
   echo -e "\e[0;31mFile hackinstall.tar.gz not found!\e[m"
+  _var_update_failed="Y"
 fi
 
+# Since Choko Hack v12.0.0 we can go back to Choko Menu
+if [ "$_var_update_failed" = "Y" ] && [ -n "$CHOKOVERSION" ] && [ ! "$CHOKOVERSION" \< "12.0.0" ]
+then
+  _var_countdown_message="Going back to Choko Menu"
+else
+  _var_countdown_message="Shutting down"
+fi
 _var_countdown=3
 while [ $_var_countdown -gt 0 ]
 do
-  echo -ne "\rShutting down in $_var_countdown seconds... "
+  echo -ne "\r$_var_countdown_message in $_var_countdown seconds... "
   _var_countdown=$((_var_countdown - 1))
   sleep 1
 done
-echo -ne "\r                                        \r"
+echo -ne "\r\e[K"
 sync
 if [ -z "$CHOKOVERSION" ] || [ "$CHOKOVERSION" \< "10.0.0" ]
 then
   poweroff -f
+elif [ "$_var_countdown_message" = "Going back to Choko Menu" ]
+then
+  exit 202
 else
   # Call for safe unmount and power off
   exit 201
